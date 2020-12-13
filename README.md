@@ -248,3 +248,71 @@ public class Node{
 
 即便双向链表在空间上花费比单向要高些，这也是空间换时间的例子。
 
+```java
+// 反转链表 1->2->3->4->5
+public ListNode reverseList(ListNode head){
+    if(head==null){
+        return null;
+    }
+    ListNode prev = head;
+    ListNode current = head.next;
+    //断开下一个节点
+    prev.next = null;
+    // 1 2->3->4->5
+    while(current!=null){
+        ListNode next = current.next;
+        // // 1<-2->3->4->5
+        current.next = prev;//将断开的节点反方向接上
+        prev = current;//切换到下一个
+        current=next;
+    }
+    return prev;
+}
+
+// 1->2->3->4->5 
+// 1->4->3->2->5
+// 1<=m<=n<=length
+public ListNode reversedBetween(ListNode head,int m,int n){
+    if(head==null||m>=n){
+        return head;
+    }
+    //为了保证头节点不丢失，创建哨兵节点dummy
+    ListNode dummy = new ListNode(-1);
+    //将头节点地引用保留
+    dummy.next = head;
+    //将指针变为头节点
+    head=dummy;
+    //接着以m为界限，找到反转地起始点地前一个节点
+    for(int i=0;i<m;i++){
+        head=head.next;
+    }
+    //接着，定义几个变量
+    //保留目前起始反转节点的前一个节点
+    // -1->1->2->3->4->5
+    ListNode prevN = head;
+    ListNode mNode = head.next;//找到m位置地节点
+    ListNode nNode = mNode;//保存这个节点地位置
+    ListNode postN = nNode.next;//m节点地下一个位置
+    //现在把他当做是普通地反转链表来处理就行
+    for(int i =m;i<n;i++){
+        /*
+        ListNode next = current.next;
+        current.next = prev;//将断开的节点反方向接上
+        prev = current;//切换到下一个
+        current=next;
+        
+        */
+        ListNode next=postN.next;
+        //同样，反向接上
+        postN.next = nNode;
+        nNode = postN;
+        postN = next;
+    }
+    prevN.next=nNode;
+    mNode.next=postN;
+    return head;
+}
+```
+
+![1607873146857](C:\Users\范凌轩\AppData\Roaming\Typora\typora-user-images\1607873146857.png)
+
