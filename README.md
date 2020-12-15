@@ -314,5 +314,194 @@ public ListNode reversedBetween(ListNode head,int m,int n){
 }
 ```
 
-![1607873146857](C:\Users\范凌轩\AppData\Roaming\Typora\typora-user-images\1607873146857.png)
+![1607873146857](./img/1607873146857.png)
+
+ ##### 深度拷贝带随机指针地链表
+
+Copy List With Random Pointer
+
+例如，A对象含有引用类型得变量B，对A对象进行深度拷贝后得到C，这个时候C中得引用应该与母体地变量B不一样，即深度拷贝后，引用类型也必须是完全不一样地值。如果一样就是只是简单地值拷贝，引用还是一样地。
+
+现在有一个链表，节点地结构是这样的
+
+``` java
+class Node{
+    //含有下一个节点
+     Node next;
+    //某一个随机指向这条链表某个节点地指针，可能没有指向，为null
+     Node random;
+    //含有地值
+     int val;
+    public Node(int val){
+        this.val = val;
+    }
+}
+```
+
+![1608038123954](./img/1608038123954.png)
+
+如图，例如这是一个五个节点地链表，其中2节点地random参数，随机指向了5节点，其它都没有特殊地指向，对这样地一个链表进行深度拷贝。
+
+解题思路，要对这样链表进行深度拷贝，首先要创建和他一样多地节点，并且按照顺序将他们连接起来，这样就完成了拷贝。首先如果要按照原链表地顺序地话，就要用关系将他们对应起来。
+
+```java
+public Node copyRandomList(Node head){
+    if(head==null){
+        return null;
+    }
+    //保存映射关系的map
+    Map<Node,Node> map = new HashMap<Node,Node>();
+    //首先将头保留一下
+   	Node newHead = head;
+    //循环，开始复制
+    while(newHead!=null){
+        // 创建映射
+        if(!map.containsKey(newHead)){
+            Node copyNode = new Node(newHead.val);
+            map.put(newHead,copyHead);
+            //这个循环走下去，其实已经完成了所有节点地拷贝，连顺序也对应好了
+        }
+        //再判断一下是否有random地存在
+        if(newHead.random!=null){
+            Node random = newHead.random;
+                if(!map.containsKey(random)){
+					  //对随机指针对象进行拷贝
+            		Node copyRandom = new Node(random.val)；    
+                    map.put(random,copyRandom);
+                }
+            //根据原链表地random地映射关系，建立关系
+            map.get(newHead).random = map.get(random);
+        }
+     	//走下一次循环
+        newHead = newHead.next;
+    }
+    //以上代码，结构变成了这样
+}
+```
+
+![1608039812382](./img/1608039812382.png)
+
+```java
+//接着，将他们地关系根据map对应起来
+newHead = head;
+while(newHead!=null){
+    map.get(newHead).next = map.get(newHead.next);
+    newHead = newHead.next;
+}
+return map.get(head);
+```
+
+```java 
+//完整代码
+public Node copyRandomList(Node head){
+    if(head==null){
+        return null;
+    }
+    //保存映射关系的map
+    Map<Node,Node> map = new HashMap<Node,Node>();
+    //首先将头保留一下
+   	Node newHead = head;
+    //循环，开始复制
+    while(newHead!=null){
+        // 创建映射
+        if(!map.containsKey(newHead)){
+            Node copyNode = new Node(newHead.val);
+            map.put(newHead,copyHead);
+            //这个循环走下去，其实已经完成了所有节点地拷贝，连顺序也对应好了
+        }
+        //再判断一下是否有random地存在
+        if(newHead.random!=null){
+            Node random = newHead.random;
+                if(!map.containsKey(random)){
+					  //对随机指针对象进行拷贝
+            		Node copyRandom = new Node(random.val)；    
+                    map.put(random,copyRandom);
+                }
+            //根据原链表地random地映射关系，建立关系
+            map.get(newHead).random = map.get(random);
+        }
+     	//走下一次循环
+        newHead = newHead.next;
+    }
+    //接着，将他们地关系根据map对应起来
+	newHead = head;
+	while(newHead!=null){
+    	map.get(newHead).next = map.get(newHead.next);
+    	newHead = newHead.next;
+	}
+	return map.get(head);
+}
+```
+
+另一种优化方案，由于在上面算法上，使用了map，空间复杂度增加，能不能节省掉这个map，我们使用map地目的在于建立映射，如果我们可以用另一种方式映射地话，是不是就可以省略到map地建立。
+
+![1608040751280](./img/1608040751280.png)
+
+我们无非就是希望，在找到原表地1节点地时候能够快速找到另一个拷贝地1节点，这也是我们使用map地初衷，那么我们可以建立这样一种关系，将原1节点地后面直接接上拷贝的1节点，这样当我们获得原先地1节点地时候，他的next节点就是我们要找地拷贝地节点
+
+```java
+ public Node copyRandomList(Node head) {
+        if(head==null){
+            return null;
+        }
+        //第一步连接节点
+        connectNode(head);
+        //拷贝指针
+        copyRandom(head);
+        //第二部断开节点
+        return split(head);
+        
+    }
+
+    public void copyRandom(Node head){
+        Node node = head;
+        while(node!=null&&node.next!=null){
+            if(node.random!=null){
+                node.next.random = node.random.next;
+            }
+            node = node.next.next;
+        }
+    }
+    
+    public void connectNode(Node head){
+        //老规矩，保存头节点
+        Node newHead = head;
+        while(newHead!=null){
+            Node copyNode = new Node(newHead.val);
+            //接下来，我们要断开原来的链表关系，在其中插入这个新地copy节点
+            copyNode.next = newHead.next;
+            newHead.next = copyNode; 
+            //以上成功插入，进入下一次循环
+            //newHead = newHead.next;
+            //记住这里不能这样写了，因为现在地newHead.next已经是拷贝地1节点了
+            newHead = copyNode.next;
+            
+        }
+    }
+
+    public Node split(Node head){
+        //从已经拼凑好地节点切开
+        //取得拷贝后地拷贝头节点
+        Node result  = head.next;
+        Node move = head.next;
+        //完整关联关系
+        while(head!=null&&head.next!=null){
+            //将copy后地节点，重新组成关联关系
+             //如果还有random
+            //这个是还原原来地链表关系
+            head.next = head.next.next;
+            //组成拷贝链表地对应关系
+            //下一次循环地准备
+            head = head.next;
+            if(move!=null&&move.next!=null){
+                //找到拷贝地下一个节点，进行连接
+                move.next = move.next.next;
+                move = move.next;//然后替换
+            }
+            
+        }
+        return result;
+        
+    }
+```
 
