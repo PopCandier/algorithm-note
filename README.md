@@ -505,3 +505,71 @@ public Node copyRandomList(Node head){
     }
 ```
 
+##### 链表相加
+
+Add two Numbers
+
+两个链表的相加
+
+```java
+//例如两个链表地相加，最后返回结果
+/**
+ 4->6->3 链表1 与 3->4->4 相加
+ 
+ 结果应该是 7->0->8 
+ 就像是 进位也算是 只不过相加是反方向地
+*/
+
+public NodeList addNodeList(NodeList n1,NodeList n2){
+    if(n1==null){
+       return n2;
+    }
+    if(n2==null){
+       return n1;
+    }
+    //接着我们需要一个哨兵节点来接收完成最后地结果
+    ListNode dummy = new ListNode(-1);
+    ListNode pre = dummy;
+    //保存进位地值
+    int carry  = 0;
+    while(n1!=null&&n2!=null){
+        //获得开始累加地值,加上进位地值
+        int number=n1.val+n2.val+carry;
+        //计算这个结果会不会造成进位
+        carry = number/10;//如果超过10将会是1
+        //对结果进行取余或者个位上地值
+        ListNode node = new ListNode(number%10);
+        //放到哨兵地后面
+        pre.next = node;
+        //pre地递增
+        pre = pre.next;
+        //下一次循环
+        n1=n1.next;
+        n2=n2.next;
+    }
+    //以上为理想情况，即n1和n2的长度都一样的时候，接下来来处理n1和n2长度不一样地情况
+    while(n1!=null){
+        int number = n1.val+carry;
+        carry = number/10;
+        ListNode node = new ListNode(number%10);
+        pre.next = node;
+        pre = pre.next;
+        n1=n1.next;
+    }
+    while(n2!=null){
+        int number = n2.val+carry;
+        carry = number/10;
+        ListNode node = new ListNode(number%10);
+        pre.next = node;
+        pre = pre.next;
+        n2=n2.next;
+    }
+    //第三种情况，如果这个时候carry还有值地画，仍然需要进一位
+    if(carry!=0){
+        ListNode node = new ListNode(carry%10);
+        pre.next = node;
+    }
+    return dummy.next;
+}
+```
+
