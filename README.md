@@ -573,3 +573,129 @@ public NodeList addNodeList(NodeList n1,NodeList n2){
 }
 ```
 
+LRU Cache
+
+面试高频，LRU缓存 ，最近最少使用原则
+
+![1608213997144](./img/1608213997144.png)
+
+```java
+class LRUCache {
+    // 基本思路使用HashMap来弥补链表地查询性能缺乏地问题
+    // 使用链表来完成lru的功能，当超过容量，将最后地一个元素踢出链表
+    private class CacheNode{
+        //要完成踢出操作，就需要找到前节点和后节点，所以这里做成双向
+        CacheNode pre;
+        CacheNode next;
+        int value;
+        int key;
+        public CacheNode(int key,int value){
+            this.key = key;
+            this.value = value;
+            this.pre = null;
+            this.next = null;
+        }
+    }
+    //容量，当缓存超过此值时，进行lru
+    private int capacity;
+    //来存储数据
+    private Map<Integer,CacheNode> cacheMap = new HashMap<Integer,CacheNode>();
+    //类似哨兵机智，设置头和尾节点来确定链表得完整性
+    private CacheNode head = new CacheNode(-1,-1);
+    private CacheNode tail = new CacheNode(-1,-1);
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        //将头尾相连
+        head.next = tail;
+        tail.pre = head;
+        // head -> tail
+        //      <-
+    }
+    
+    public int get(int key) {
+        //首先判断能不能找到
+        if(!cacheMap.containsKey(key)){
+            //没找到对应地，返回-1
+            return -1;
+        }
+        //如果找到，就取出来
+        CacheNode hit=cacheMap.get(key);
+        //将命中地节点前后断开，并移动到尾部
+        hit.pre.next=hit.next;
+        hit.next.pre=hit.pre;
+        //移动到尾部
+        move2Tail(hit);
+        return hit.value;
+    }
+
+    private void move2Tail(CacheNode node){
+        //首先要断开现在尾部节点地练习
+        node.pre = tail.pre;
+        tail.pre = node;
+        node.pre.next = node;
+        node.next = tail;
+        
+    }
+    
+    public void put(int key, int value) {
+        int result = get(key);
+        if(result!=-1){
+            //说明是替换
+            cacheMap.get(key).value = value;
+            return;
+        }
+        //否则说明是新增
+        //判断是否长度已经大于了最大长度
+        if(cacheMap.size()==capacity){
+            //将链表尾部地节点提出
+            CacheNode dropNode = head.next;
+            head.next=dropNode.next;
+            dropNode.next.pre = head;
+            cacheMap.remove(dropNode.key);
+            //等待gc
+        }
+        //增加
+        CacheNode addNode = new CacheNode(key,value);
+        cacheMap.put(key,addNode);
+        move2Tail(addNode);
+    }
+}
+
+// 使用java api实现
+class LRUCache {
+
+        private int cap;
+	private Map<Integer, Integer> map = new LinkedHashMap<>();  // 保持插入顺序
+
+	public LRUCache(int capacity) {
+		this.cap = capacity;
+	}
+
+	public int get(int key) {
+		if (map.keySet().contains(key)) {
+			int value = map.get(key);
+			map.remove(key);
+                       // 保证每次查询后，都在末尾
+			map.put(key, value);
+			return value;
+		}
+		return -1;
+	}
+
+	public void put(int key, int value) {
+		if (map.keySet().contains(key)) {
+			map.remove(key);
+		} else if (map.size() == cap) {
+			Iterator<Map.E***y<Integer, Integer>> iterator = map.e***ySet().iterator();
+			iterator.next();
+			iterator.remove();
+
+			// int firstKey = map.e***ySet().iterator().next().getValue();
+			// map.remove(firstKey);
+		}
+		map.put(key, value);
+	}
+}
+```
+
+ 
