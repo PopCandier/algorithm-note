@@ -698,4 +698,105 @@ class LRUCache {
 }
 ```
 
- 
+ #### 栈
+
+先入后出，想象成盒子，添加数据称为入栈，压栈，进栈，取出数据或者移除数据称为出栈，弹栈
+
+应用的话，想象浏览器的回退功能，想退回上一个浏览的东西可以使用这个。
+
+检测代码中括弧匹配问题
+
+Valid Parenthese 括号验证
+
+输入`()`返回ture，`()[]{}`返回true，`(]`false
+
+```java
+public boolean isValid(String s){
+    
+    if(s==null||s.length()==0){
+        return true;
+    }
+    
+    Stack<Character> stack = new Stack<Character>();
+    
+    char[] stacks = stack.toCharArray();
+    for(char c : stacks){
+        if(c=='('||c=='{'||c=='['){
+        	//是我们需要匹配的内容，压栈
+            stack.push(c);
+            continue;
+        }
+        if(c==')'){
+            //由于（）是成对出现，所以根据栈的结构，他的上一个应该是和他一样的
+            if(stack.isEmpty()||stack.pop()!='('){
+                return false;
+            }
+        }
+        if(c=='}'){
+            //由于（）是成对出现，所以根据栈的结构，他的上一个应该是和他一样的
+            if(stack.isEmpty()||stack.pop()!='{'){
+                return false;
+            }
+        }
+        if(c==']'){
+            //由于（）是成对出现，所以根据栈的结构，他的上一个应该是和他一样的
+            if(stack.isEmpty()||stack.pop()!='['){
+                return false;
+            }
+        }
+        //正确的匹配完了。应该一个都不剩，所以如果还有剩余，说明也是false
+        return stack.isEmpty();
+    }
+    
+}
+```
+
+Min Stack 最小栈
+
+设计一个这样的栈，插入若干数值，可以使用O（1）的时间来快速找到插入若干数值中最小的元素
+
+首先，根据栈的数据结构，想要取出数值必须将一个一个元素弹出来，你必须`翻箱倒柜`的从顶查到尾，这显然不是O（1），而且如果有这样栈能够这样的话，其实也算是一个很完美的数据结构了。
+
+所以我们可以用两个栈来实现，保持和前一个栈的插入行为一致，但插入的元素却有些区别![1608453067792](./img/1608453067792.png)
+
+后者只存储最小的元素，当你压入元素的时候，会比较与栈顶的元素大小，如果比元素大，那么`minstack`
+
+将会保持插入一条和之前最小的元素一样的值，来保持和原栈的层数一致，如果新插入的要销，那么就替换成新的元素。
+
+如果是基本的元素操作，操作原栈的同时，也要移除minstack里的元素，来保持栈深度的一致，如果要取出最小的值，直接操作minstack就可以了，不过也要记住，同步移除掉原栈的元素
+
+```java
+class MinStack{
+    
+    Stack<Integer> stack;
+    Stack<Integer> minStack;
+    
+    public void push(int x){
+        stack.push(x);
+        if(minStack.isEmpty()||x<minStack.peek()){
+            minStack.push(x);
+        }else{
+            //保持原样
+            minStack.push(minStack.peek());
+        }
+    }
+    
+    public void pop(){
+        minStack.pop();
+        stack.pop();
+    }
+    
+    public int top(){
+        return stack.peek();
+    }
+
+    public int getMin(){
+        return minStack.peek();
+    }
+}
+```
+
+Maximun Range
+
+区间最大值
+
