@@ -887,3 +887,141 @@ public int max(int[] numbers){
 以`[6,2,3,4,1]`为例子，这个取名为`目标数组`
 
 首先准备一个stack，从6开始，即索引为0开始寻找，6是到索引0为止最小地数，那么压栈，注意这个时候压入地是`索引`，是在目标数组地索引，而不是6本身。到了2，我们将stack中存入地目前为止在目标数组中已知最小数的索引与下一个进行比较，我们发现2比6要小，所以我们将6弹出，将2的索引压栈，这个时候我们可以对6进行区间最大值地运算，接着，我们比较3，和4与2的大小，结果发现都没有2大，所以2，3，4数得索引被同样被压栈，被保留，因为在同为最小数是2地情况下，这中以2为最小值地组合，后面地成员数越多，区间最大值也必然是越大的，所以还未找到目标数组最小值的时候，我们就可以认为这是`一组以2为最小值地组合`，到最后可以一起计算，但是最后找到了元素1，所以，1比之前压栈得数都小，那么我们认为之前地stack中地值都可以拿出来做计算了，因为从找到1开始，这会变成`一组以1为最小值地组合`。至于最后还要进行一次运算，也是怕最后一个元素会比之前地元素还要小，做得兼容操作。
+
+#### 队列
+
+what is queue
+
+用栈实现队列
+
+![1608560705193](./img/1608560705193.png)
+
+首先，一个栈肯定是实现不了队列的效果，我们这里可以使用两个栈来模拟这个效果。
+
+当栈1插入了若干个节点后，如果你希望取出头节点地话，符合队列地先入先出原则，可以将栈1中地全部节点取出在塞入到栈2，这个时候，栈2里地弹出顺序就符合了队列地效果，如果后续地元素进行添加，那么只需要往栈1里面添加就行，只要栈2里面地数据不为空，取值就可以一直往栈2中弹出，当栈2里地元素空地时候，再进行一次对栈1得全量获取
+
+```java
+class MyQueue{
+    //负责存值
+    Stack<Integer> stackA;
+    //负责取值
+    Stack<Integer> stackA;
+    
+    public MyQueue(){
+        stackA = new Stack<Integer>();
+        stackB = new Stack<Integer>();
+    }
+    
+    public void push(int x){
+        stackA.push(x);
+    }
+    
+    public int pop(){
+        if(empty()){
+            return -1;
+        }
+        fill();
+        return stackB.pop();
+    }
+    
+    private void fill(){
+        if(stackB.isEmpty()){
+            //需要重新填充数据到B中
+            while(!stackA.isEmpty()){
+                stackB.push(stackA.pop());
+            }
+        }
+    }
+    
+    public int peek(){
+        if(empty()){
+            return -1;
+        }
+        fill();
+        return stackB.peek();
+    }
+    
+    public boolean empty(){
+        return stackB.isEmpty()&&stackA,isEmpty();
+    }
+    
+}
+```
+
+推荐结果打散
+
+快手面试题，快手作为一个短视频平台，有时候会推荐图片和广告，给你一组随机地图片和广告，要让他们穿插的交替地进行排列展示，这里用v来比作视频，p来比作图片。给你这样一组数据
+
+```
+v1 v2 v3 v4 v5 v6 v7 p1 p2 p3 p4
+```
+
+当然实际上，在终端上展示你不可能这样一下子一排地视频，视频完了后面是一堆图片，这看起来不友好。
+
+``` java
+public List<String> getRecommendResult(List<String> picAndVideo,int maxInterval){
+     //存储结果
+    List<String> result = new ArrayList<String>();
+    if(picAndVideo==null&&picAndVideo.isEmpty()){
+        return result;
+    }
+   	Queue<String> picQueue = new LinkedList<String>();
+    Queue<String> videoQueue = new LinkedList<String>();
+    boolean firstPics = false;
+    //获得总共地数据长度
+    int index = 0;
+    int picAndVideoLength = picAndVideo.size();
+    //这个方法用于找到第一个图片
+    while(!firstPics&&index<picAndVideoLength){
+        String item = picAndVideo.get(index);
+        if(isVideo(item)){
+            result.add(item);
+            index++;
+        }else{
+            //是图片
+            firstPics = true;
+        }
+    }
+    //在找到第一个图片地时候，将会到这个
+    while(index<picAndVideoLength){
+        String item = picAndVideo.get(item);
+        if(isVideo(item)){
+            videoQueue.add(item);
+        }else{
+            picQueue.add(item);
+        }
+        index++;
+    }
+    //以上，对找到第一张图面后地内容进行归类
+    int currentSize = result.size();
+    while(!videQueue.isEmpty()&&!picQueue.isEmpty()){
+        if(currentSize>=maxInterval){
+            //当前视频内容如果已经超过了最大间隔，那么我们将插入一个图片
+            result.add(picQueue.poll());
+            curentSize=0;//设置回0
+        }else{
+            //否则我们可以接着添加视频
+            result.add(videoQueue.poll())
+                currentSize++;
+        }
+    }
+    //以上地内容，当视频 videQueue 或者 picQueue为空地时候，都会弹出
+    //所以，如果这个时候videoQueue，也就是视频队列里如果还有东西，我们是允许接着插入地
+    if(!videoQueue.isEmpty()){
+        result.add(videoQueue.poll());
+    }
+    //如果以上currentSize在最后一个视频累加完了后，正好超过间隔，也尝试加上图片
+    while(currentSize>=maxInterval&&!picQueue.isEmpty()){
+        result.add(picQueue.poll());
+    }
+    return result;
+}
+
+private boolean isVideo(String slice){
+    if(slice.indexOf("v"!=-1){
+        return true;
+    }
+    return false;
+}
+```
+
