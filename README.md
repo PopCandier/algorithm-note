@@ -1025,3 +1025,113 @@ private boolean isVideo(String slice){
 }
 ```
 
+#### 二分法
+
+Binary Search
+
+###### 在旋转有序的数组中搜数
+
+Search in Rotated Sorted Array
+
+先写一个二分法的模板，**请牢记**
+
+``` java
+public static void main(String[] args){
+    //给定一组数据，这里必须是有序地
+    int[] num = {1,4,7,9,10,14,16,20,56,89};
+    System.out.println(getIndex(num,4) );
+}
+
+public static int getIndex(int[] num,int target){
+ 	//校验查找容器是否合法
+    if(num==null||num.length==0){
+        return -1;
+    }
+    int start = 0;
+    int end = num.length-1;
+    //以上定义开头和结尾
+    //这里定义二分法得灵魂，中间地索引位
+    int mid;
+    for(start+1<end){
+        mid = start+(end-start)/2;
+        if(num[mid]==target){
+            //找到了直接返回
+            return mid;
+        }else if(num[mid]>target){
+            //说明在左边
+            end = mid;
+        }else{
+            //比他大，说明在右边
+            start = mid;
+        }
+    }
+    //在这个以上返回都找到了
+    if(num[start]==target){
+        return start;
+    }
+    if(num[end]==target){
+        return end;
+    }
+    return -1;
+}
+```
+
+回到之前地旋转有序数组中，这是一组有顺序地数组，例如 `{1,4,7,9,10,14,16,20,56,89}`这样的数组，但是这个数组会从某个位置，开始旋转，意味着他可能会变成这样`{14,16,20,56,89,1,4,7,9,10}`，意味着从某个点开始，会进行某段地不同位置得升序。
+
+![1608650422561](./img/1608650422561.png)
+
+可以把反转后地数组，看做是这样地两段线条，A和B，目标target可能在A或者B上，同时，当你取mid也就是中间值地时候，也可能是在A上也可能在B上，所以我们需要考虑几种情况。
+
+第一种，当mid落在了A上，且target确实也在A上，且start<=target<=mid地时候，可以完全确定target一定是在A的上面。反之，那么mid后面，也就是B线段可以完全舍弃。否则target>mid
+
+![1608650811314](./img/1608650811314.png)
+
+第二种情况，目标是比start要小的，那么就从B线条上寻找，如果符合mid<=target<=end这样地条件，那么一定就是在B线条上，抛弃A线条上地所有条件
+
+![1608650973977](./img/1608650973977.png)
+
+``` java
+public void search(int[] num,int target){
+    if(num==null&&num.length==0){
+        return -1;
+    }
+    int start = 0;
+    int end = num.length-1;
+    int mid;
+    while(start+1<end){
+   		//确定可能是在A线条还是B线条
+        mid = start+(end-start)/2;
+        if(num[mid]==target){
+            return mid;
+        }
+        //说明在A端
+        if(num[mid]>num[start]){
+            if(target<=num[mid]&&target>=num[start]){
+                //完美落到A上，对后面地内容进行剔除
+                end = mid;
+            }else{
+                //否则往前找
+                start=mid;
+            }
+        }else{
+            //说明在B段
+            if(target<=num[end]&&target>=num[mid]){
+                start=mid;
+            }else{
+                end=mid;
+            }
+        }
+    }
+   
+    //补充
+    if(num[start]==target){
+        return start;
+    }
+    if(num[end]==target){
+        return end;
+    }
+    return -1;
+    
+}
+```
+
