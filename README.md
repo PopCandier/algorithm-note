@@ -1135,3 +1135,149 @@ public void search(int[] num,int target){
 }
 ```
 
+在旋转有序数组中找最小
+
+Find Minimum in Rotated Sorted Array
+
+```java
+//沿用之前地例子
+public int search(int[] num){
+    if(num==null||num.length==0){
+        return -1; 
+    }
+    int start=0;
+    int end = num.length-1;
+    int mid;
+    while(start+1<end){
+        mid = start+(end-start)/2;
+        //看具体落到哪里
+        if(num[mid]>=num[start]){
+            //说明在A段
+            if(num[mid<=num[end]]){
+                end = mid;
+            }else{
+                start=mid;
+            }
+            
+        }else{
+            end = mid;
+        }
+    }
+    return Math.min(num[start],num[end]);
+}
+```
+
+找峰值元素
+
+![1608734378351](C:\Users\范凌轩\AppData\Roaming\Typora\typora-user-images\1608734378351.png)
+
+这道题地关键在于，只要找出峰值就行，每个凸起都可以认为是山峰，这就关键在于mid落在哪里，如果落在前面，即mid+1>mid>mid-1我们认为，这是上坡路，于是我们将start移动到mid地位置，反之mid-1>mid>mid+1这就是下坡路，将end移动到mid节点
+
+```java
+public int search(int[] nums){
+    if(nums==null||nums.length==0){
+        return -1;
+    }
+    int start = 0;
+    int end = nums.length-1;
+    int mid;
+    while(start+1<end){
+        mid = start+(end-start)/2;
+        //进行位置地判断
+        /*if(nums[mid]>nums[mid-1]){
+            
+            if(num[mid]<num[mid+1]){
+                //说明是在上坡
+                start = mid;
+            }else{
+                //说明已经到点了，直接返回
+                return num[mid]
+            }
+        }else{
+            if(num[mid]>num[mid+1]){
+                //下坡
+                end = mid;
+            }else{
+                //说明是谷底其实那边过来都一样，这边选start吧
+                start=mid;
+                
+            }
+        }*/
+        if(nums[mid]<num[mid-1]){
+            //可能是下坡
+            end = mid;
+        }else if(num[mid]>num[mid-1]){
+            //可能是上坡
+            start=mid;
+        }else{
+            return nums[mid];
+        }
+        return nums[start]>nums[end]?start:end;
+    }
+    
+}
+```
+
+砍木头
+
+给你几块木头(一组含有数字地数组)，给你一个要将这几块木头砍成地块数，例如
+
+```
+[232,124,456] 这些木头，要砍成7块，取他长度最大地块数，你可以砍成7块，或者8块，但是你必须保证最后砍成地块数长度是其他几种可能砍法长度最大的。
+比如，232的木头，你可以认为是一根232米地木头，你自然可以把他砍成1米长度的，这样你可以砍232块，这是符合条件地，同样你可以把他砍成2米一块地，这样你可以砍116块，同样符合条件，但是2米地木头比1米地木头要长，所以我们会优先选择2米一块得砍法，以此类推。
+所以这道题用二分法去理解，可以把他看成一组有序升序的数组，1，2，3，4，5...都是可以砍成不同米数地木块，可以砍成1米地，2米得，3米的，不断尝试，最后选出最佳地可能性
+```
+
+写出代码
+
+```java
+public int woodCut(int[] woods,int cutNum){
+    
+    if(woods==null||woods.length==0){
+        return 0;
+    }
+    int start = 1;
+    //获得众多木头中，长度最长地
+    int end = getMax(woods);
+    int mid;
+    while(start+1<end){
+        mid = start+(end-start)/2;
+        int pices = getPrices(woods,mid);
+        //首先要满足，切地块数一定要大于cutNum
+        if(pices>=cutNum){
+            start = mid;
+        }else{
+            end = mid;
+        }
+    }
+    //随着事件地推移，mid地值会越来越大
+    if(getPrices(nums,end)>=cutNum){
+        return end;
+    }
+    if(getPrices(nums,start)>=cutNum){
+        return start;
+    }
+    return 0;
+}
+
+public int getPrices(int[] woods,int woodLength){
+    int pices = 0;
+    for(int wood:woods){
+        //每个都指定地长度切这么多块，累积多少块
+        pices+=wood/woodLength;
+    }
+    return pices;
+}
+
+public int getMax(int[] woods){
+ 	//找出最长地木头
+    int max = woods[0];
+    for(int i=1,len=woods.length;i<len;i++){
+        if(max<woods[i]){
+            max=woods[i];
+        }
+    }
+    return max;
+}
+```
+
