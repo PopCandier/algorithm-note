@@ -1169,7 +1169,7 @@ public int search(int[] num){
 
 找峰值元素
 
-![1608734378351](C:\Users\范凌轩\AppData\Roaming\Typora\typora-user-images\1608734378351.png)
+![1608734378351](./img/1608734378351.png)
 
 这道题地关键在于，只要找出峰值就行，每个凸起都可以认为是山峰，这就关键在于mid落在哪里，如果落在前面，即mid+1>mid>mid-1我们认为，这是上坡路，于是我们将start移动到mid地位置，反之mid-1>mid>mid+1这就是下坡路，将end移动到mid节点
 
@@ -1242,6 +1242,7 @@ public int woodCut(int[] woods,int cutNum){
     int mid;
     while(start+1<end){
         mid = start+(end-start)/2;
+        //每块木头都砍 mid长度，看看传入地木头可以砍几块，其中会一直缩小范围，直到最后确定合适地长度
         int pices = getPrices(woods,mid);
         //首先要满足，切地块数一定要大于cutNum
         if(pices>=cutNum){
