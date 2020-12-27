@@ -1282,3 +1282,140 @@ public int getMax(int[] woods){
 }
 ```
 
+
+
+#### 双指针 
+
+想要说明地是，双指针并不是说next和pre这样地指针，而说地是一个链表中存在两个指针，具体这两个指针地用法是干什么，要根据功能而定。
+
+例如，你想要在一个链表中寻找中间地位置，那么你可以规定这样地两个指针，一个指针用于一次移动一个位置，一个用于一次性移动两个位置，当后一个指针移动两个位置并且已经没有指向，即指向为空地时候，说明已经到尾，遍历完了，这个时候那个移动一个地，就有可能是中间值，当然如果这个指针地长度是奇数会更加明显。
+
+#### 2sum and 3sum
+
+2sum，给定一个已经排好序地数组，里面有一些数字，然后给你一个数字，这个数组是之前给的数组，给你地数字将会是数组里某两个数相加地和，例如`[2,7,11,21]`，然后给你一个数字9，那么我们可以知道是2和7相加地和，那么返回2和7的数组索引[1,2]。
+
+最笨地方法就是双循环，直到算出结果。
+
+ ![1609078891265](./img/1609078891265.png)
+
+这里得双指针一个指向了数组地头，一个指向了尾巴，因为这是一个升序的数组，所以头尾相加获得地值就是一个平衡点，如果`num[left]+num[right]>target`，说明结果过大，可以通过减少尾巴的索引，也就是通过减少right的索引来获得更小得结果，同理，如果结果是小于的，那么我们就需要移动left的索引，通过增大来获得更大的结果，最终来获得合适地值
+
+```java
+public int[] getIndex(int[] nums,int target){
+    if(num==null||num.length==0){
+        return null;
+    }
+    int left = 0;
+    int right = num.length-1;
+    while(left<right){
+        if(nums[left]+nums[right]==target){
+            return new int[]{left,right};
+        }else if(nums[left]+nums[right]<target){
+            left++;
+        }else{
+            right++;
+        }
+    }
+    return null;
+}
+// 老师地版本
+public int[] getIndex(int[] nums,int target){
+    if(num==null||num.length==0){
+        return null;
+    }
+    int[] result = new result[2]{-1,-1};
+    int left = 0;
+    int right = num.length-1;
+    while(left<right){
+        if(nums[left]+nums[right]==target){
+            result[0]=left;
+            result[1]=right;
+            break;
+        }else if(nums[left]+nums[right]<target){
+            left++;
+        }else{
+            right++;
+        }
+    }
+    return result;
+}
+```
+
+如果改变一下题目，要是目标数组不止一对可以获得目标数值地索引怎么办
+
+![1609079532880](./img/1609079532880.png)
+
+当我们查找到的时候，同时移动左右就行了
+
+```java
+public List<int[]> getIndex(int[] nums,int target){
+    if(num==null||num.length==0){
+        return null;
+    }
+    List<int[]> result = new ArrayList<>();
+    int left = 0;
+    int right = num.length-1;
+    while(left<right){
+        if(nums[left]+nums[right]==target){
+            result.add(new int[]{left,right});
+            left++;
+            right++;
+        }else if(nums[left]+nums[right]<target){
+            left++;
+        }else{
+            right++;
+        }
+    }
+    return results;
+}
+```
+
+这样，我们就把O(n2)->O(n)，变成了这样的时间复杂度。
+
+那么三个数呢？同理，我们可以使用三个指针来确定他们之间地关系。
+
+![1609079812449](./img/1609079812449.png)
+
+我们固定一个，然后后面沿用2sum的逻辑。这样我们地时间复杂度也从O(n3)变成了O(n2)
+
+```java
+public List<List<Integer>> getIndex(int[] nums,int target){
+    if(nums==null||nums.length==0){
+        return null;
+    }
+    Arrays.sort(nums);
+    List<List<Integer>> result = new ArrayList<List<Integer>>();
+    //这里为什么是len-2.因为后面两个位置要留给left 和 right，如果循环真的走到那一步了
+    for(int i=0,len<nums.length;i<len-2;i++){
+        int left=i+1;
+        int right=len-1;
+        //和2sum一样
+        while(left<right){
+            //原题目是要所有累加地数字等于0
+            if(nums[i]+nums[left]+nums[right]==0){
+                List<Integer> s = Arrays.asList(nums[i],nums[left],nums[right]);
+                result.add(s);
+                //全部累加推进
+                left++;
+                right++;
+                //去从, 害怕出现left方向有相同数字地值,或者right方向有相同地，就直接忽略
+                while(left<right&&nums[left]==nums[left+1]){
+                    left++;
+                }
+                while(left<right&&nums[right]==nums[right-1]){
+                    right--;
+                }
+            }else if(nums[i]+nums[left]+nums[right]>0){
+                right--;
+            }else{
+                left--;
+            }
+        }
+    }
+    return result;
+}
+```
+
+##### 验证三角形
+
+Valid Triangle Number，两边之和大于第三边，两边之差小于第三边。
