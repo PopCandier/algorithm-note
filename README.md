@@ -1419,3 +1419,104 @@ public List<List<Integer>> getIndex(int[] nums,int target){
 ##### 验证三角形
 
 Valid Triangle Number，两边之和大于第三边，两边之差小于第三边。
+
+给你一组数字[3,4,1,5]找出这其中有几种三角形得组合
+
+沿用两边之和大于第三边，两边之差小于第三边，这是一个要素，其次我们需要这样一个模型。
+
+![1609250460941](./img/1609250460941.png)
+
+任意地三个数字，有以上地6种组合，那么我们如果要每组都进行这样地校验，会比较复杂，我们可以这样，将给定地数组进行**排序**，这样我们就得到一对有顺序得数字`a<b<c<d`
+
+然后，来到第一个组合，abc的组合，因为他们地大小关系已知，但是是否满足条件就不清楚了，所以我们来到第一个组合的可能性，那就是第一个条件，`a+b>c`，是否满足，如果满足第一个条件，是否第二个条件也满足了？因为c比a和b都要大，所以a加上一个比b还要大的数是不是一定大于b呢，答案是肯定的，同理，第三个条件也满足，意味着只需要验证第一个条件成立，第二和第三个条件也同时成立。接着我们看剩下的四五六中方案，能否沿用之前地理论，a和b原本就比c要小，两个都小的数相减，答案肯定是更小得，所以第四种情况也成立，再看第五和第六，由于c比a与b的和要小得，所以c减去a也不可能比b要大，因为b与c-a的结果相差得，就是a+b与c的差值，不差的话就会相等了。同理第六条也成立。由此，只需要满足一个条件，其它的五个条件也会同时成立，大前提是他们是有**顺序**的。
+
+![1609251516131](./img/1609251516131.png)
+
+这里我们再做一次优化，我们从后往前遍历，因为如果`b+e>f`成立地话，那么比b还要大的cd也同样成立前面的公式，所以之间索引之间相减就可以得到组合得可能性。
+
+```java 
+// 返回有几种组合
+public int trangleNumber(int[] nums){
+    if(nums==null||nums.length==0){
+        return 0;
+    }
+    //先排序
+    Arrays.sort(nums);
+    int total = 0;
+    //我们从最后往前遍历
+    for(int i=nums.length-1;i>=2;i--){
+        int start = 0;
+        int end = i-1;
+        while(start<end){
+            if(nums[start]+nums[end]>nums[i]){
+                total+=(end-start);
+                end--;
+            }else{
+                start++;
+            }
+        }
+    }
+    return total;
+}
+```
+
+#### 存水问题
+
+trapping rain water
+
+![1609254316530](./img/1609254316530.png)
+
+输入：height = [0,1,0,2,1,0,1,3,2,1,2,1]
+输出：6
+解释：上面是由数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的高度图，在这种情况下，可以接 6 个单位的雨水（蓝色部分表示雨水）。
+
+来源：力扣（LeetCode）
+链接：https://leetcode-cn.com/problems/trapping-rain-water
+
+同样使用双指针，一个指向头一个指向尾部。同时我们需要理解一点的是，能装多少水取决于最短的那部分，也就是水桶原因，水桶能装多少水取决于水桶最短的那块短板。
+
+所以，我们的思路是，当数组的当前数和下一个数做大小对比，如果后一个数比前一个数大，那么呈上升趋势，所以不会蓄水，因为已经没有比他更高的板子替他挡住水。
+
+![1609254607218](./img/1609254607218.png)
+
+反之，存在那么就存在蓄水可能性，为什么这么说，如果你希望蓄水那么在你的板子另一边一定存在一块和你相同高度或者更高的板子替你挡住，那么才有可能蓄水。
+
+![1609254779910](./img/1609254779910.png)
+
+所以，一开始，我们首先取数组的开头和结尾，然后做比较，如果开头比结尾小，那么至少在结尾处有一个值可能可以**兜底**，帮忙堵住然后蓄水，当找到比结尾处更高地板子，那么高度替换，再接着走下一步。
+
+```java
+public int trap(int[] number){
+    if(number==null||number.length==0){
+        return 0;
+    }
+    int left=0;
+    int right=number.length-1;
+    //对应的所有的高度
+    int leftHeight = number[left];
+    int rightHeight = number[right];
+    int sum=0;
+    while(left<right){
+        if(leftHeight<rightHeight){
+            //判断左边是否具有蓄水可能
+            if(leftHeight>number[left+1]){
+                //存在蓄水可能
+              sum+=leftHeight-number[left+1];  
+            }else{
+                //遇到更高的替换
+                leftHeight=number[left+1];
+            }
+            left++;
+        }else{
+            if(rightHeight>number[right-1]){
+                sum+=rightHeight-number[right-1];
+            }else{
+                rightHeight = number[right-1];
+            }
+            right--;
+        }
+    }
+    return sum;
+}
+```
+
