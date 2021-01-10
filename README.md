@@ -1911,6 +1911,110 @@ public class TreeNode{
 
 这样的话，就是类似链表了，完全像一个方向倾斜，时间复杂度是O(n)，也可能一个二叉查找树在经历一系列的增删后，树的结构也变得极其不平衡了，这样其他的操作时间复杂度也会变化，所以我们尽量要让二叉查找树尽量**平衡点**，我们拿来的讨论一般是完全二叉树或者满二叉树这样比较平衡的，但是我们需要那种无论怎么删除与增加都可以保持平衡的数，这样时间复杂度就会比较稳定。
 
+#### 二叉树的序列化和反序列化
+
+Serialize and Deserialize Binary Tree
+
+将某一个已知的的树结构序列化成一串字符串，并可以将其反序列化成原有的树结构
+
+```java
+/*
+    1
+   / \
+  2   3
+  	 / \
+  	4	5
+假设约定以上的二叉树将会序列成这样  	
+->[1,2,3,#,#,4,5]
+*/
+public class TreeNode{
+    int val;
+    private TreeNode left;
+    private TreeNode right;
+    pirvate TreeNode(int x){
+        this.val = x;
+    }
+}
+
+public String serialize(TreeNode root){
+    if(root==null){
+        return "[]";
+    }
+    List<TreeNode> list = new ArrayList<TreeNode>();
+    //用来获取树节点中的全部内容
+    list.add(root);
+    for(int i =0;i<list.size();i++){
+        TreeNode node = list.get(i);
+        //如果当前的节点为空的话，那么就接着下次循环
+        if(node==null){
+            continue;
+        }
+        //否则开始左右节点地添加，即便是左右节点为空，也无所谓，因为会在下载地continue里面跳出循环
+        //这里有一个细节就是，先添加地left，所以如果left不为空的话，会优先遍历完left的树
+        list.add(node.left);
+        list.add(node.right);
+    }
+    //由于ArrayList的特殊性，在初始化如果没有设定初始化大在发生第一次的add的操作时会，设置10的长度，则意味着剩下的位置可能也会存在null的情况，这不是我们想要的，我们要剔除
+    //[1,2,3,null,null,4,5,null,null...]，所以我们从后往前遍历
+    while(list.get(list.size()-1)==null){
+        list.remove(list.size()-1);
+    }
+    //拼接结果
+    StringBuilder result = new StringBuilder("[");
+    result.append(","+list.get(0).val);
+    for(int i=1;i<=list.size();i++){
+        if(list.get(i)==null){
+            result.append(",#"+);
+        }else{
+            result.append(","+list.get(i).val);
+        }
+    }
+    result.append("]");
+    return result.toString();
+}
+
+public TreeNode deserialize(String data){
+    if(data==null||data.equals("[]")){
+        return null;
+    }
+    //那么进来的结果是[1,2,3,#,#,4,5]
+    // 首先我们要取出中间值
+    String[] datas = data.substring(1,data.length()-1).split(","):
+    // 1,2,3,#,#,4,5
+    //因为我们是序列化时候是从左边开始，所以这边做一个标记
+    boolean isLeft = true;
+    int index = 0;//节点的遍历位置
+    //还是老样子，整理
+    List<TreeNode> queue = new ArrayList<TreeNode>();
+    //和序列化一样，构建第一个节点
+    TreeNode node = new TreeNode(Integer.parseInt(datas[0]));
+    //也和序列化一样，添加进去
+    queue.add(node);
+    for(int i=1;i<datas.length;i++){
+        if(!datas[i].equals("#")){
+            TreeNode n = new TreeNode(Integer.parseInt(datas[i]));
+            //查看是左节点
+            if(isLeft){
+                queue.get(index).left = n;
+            }else{
+                queue.get(index).right=n;
+            }
+            queue.add(n);
+        }
+        
+        //如果当前结果以右节点作为结束，那么我们需要递增树的节点索引，来找下一个节点
+        if(!isLeft){
+            index++;
+        }
+        isLeft=!isLeft;
+    }
+    return node;
+    
+}
+```
+
+
+
 #### 树的遍历
 
 Tree Tranversal
