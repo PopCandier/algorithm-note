@@ -1520,3 +1520,308 @@ public int trap(int[] number){
 }
 ```
 
+#### Sort 排序
+
+冒泡、插入、选择、归并、快速、基数、桶排。
+
+考虑因素有哪些。
+
+* 复杂度分析
+
+* 比较和交换字节分析
+* 内存分析
+* 稳定性（如果原排序目标中，可能存在两个相同的元素，在经过排序后，这两个元素的先后顺序并没有改变）
+
+| 算法名称   | 稳定性 | 最好(时间复杂度) | 最坏(时间复杂度) | 平均(时间复杂度) | 原地排序 |
+| ---------- | ------ | ---------------- | ---------------- | ---------------- | -------- |
+| 冒泡       | yes    | O(n)             | O(n2)            | O(n2)            | yes      |
+| 插入       | yes    | O(n)             | O(n2)            | O(n2)            | yes      |
+| 选择       | no     | O(n)             | O(n2)            | O(n2)            | yes      |
+| 快速(重点) | no     | O(nlogn)         | O(n2)            | O(nlogn)         | yes      |
+| 合并(重点) | yes    | O(nlogn)         | O(nlogn)         | O(nlogn)         | no       |
+| 计数       | yes    | O(n+k)           | O(n+k)           | O(n+k)           | no       |
+| 桶排       | yes    | O(n+k)           | O(n2)            | O(n+k)           | no       |
+| 基数       | no     | O(n*K)           | O(n*K)           | O(n*k)           | no       |
+
+* 冒泡
+  * 经过一次一次地比较，最后把最大/最小放在最后，达到排序目的
+* 插入
+  * 类似扑克牌的排序，将合适大小得牌插入到应该有地位置，例如4应该在5的后面。
+* 选择
+  * 无论什么数据进去，都是O（n2）得时间复杂度，但是不占用内存空间
+
+
+
+#### 冒泡 插入 选择
+
+都是O（n2）时间复杂度得算法
+
+
+
+```java
+public void bubboSort(int[] nums){
+    if(num==null||num.length==0){
+        return;
+    }
+    for(int i =0;i<nums.length;i++){
+        for(int j=1;j<nums.length;j++){
+            if(nums[j-1]>num[j]){
+                int num = nums[j-1];
+                nums[j-1]=nums[j];
+                num[j]=nums;
+            }
+        }
+    }
+}
+```
+
+![1609678889881](./img/1609678889881.png)
+
+  选择排序，选择一个节点与他的后一个节点，也可以称为插入节点，插入节点与前一个节点做比较，如果比前一个要大，那么保持原样，`j`和`insert node`节点同时往前移动，如果这个时候.
+
+![1609679018611](./img/1609679018611.png)
+
+由于2是比9要小，所以2和9做交换，然后2再与1做比较，由于2要比1要大，所以不做交换，一次类推，完成最后的排序。
+
+![1609679125552](./img/1609679125552.png)
+
+```java 
+public void insertSort(int[] array){
+    int insertNode;
+    int j;
+    for(int i =1;i<array.length;i++){
+        insertNode = array[i];
+        j = i-1;
+        //已经到尾部，或者前一个已经比他小了，不再接着排序
+        while(j>=0&&insertNode<array[j]){
+            //向前挪
+            array[j+1] = array[j];
+            j--;
+        }
+        array[j+1]=insertNode;
+    }
+}
+```
+
+选择排序的部分内容有点类似于冒泡排序。他比较核心的地方`冒泡`的不是数值本身，而是指针，也就是数组得索引。
+
+![1609683166625](./img/1609683166625.png)
+
+i来表示的第一层，循环，j表示的是第二层循环的索引，每次第一层循环开的时候，我们将i的索引赋值给pos，然后让pos与内层的j索引去比较，这里，pos与j进行比较，由于9是比1要小的，所以不进行替换。那么进入第二次循环，然后移动pos和j进行下一轮地比较。
+
+![1609683851440](./img/1609683851440.png)
+
+由于9比2大，所以，将j的值，**请注意**，这里是将j的值赋值给pos，j会接着向前移动。
+
+![1609683895944](./img/1609683895944.png)
+
+接着再次比较，pos所指向地2不比j指向的4大不发生替换。
+
+![1609684065456](./img/1609684065456.png)
+
+j接着往前移动，pos是否比j要大，答案是否的，所以不发生交换。到此第一阶段结束，我们比较此时pos与i的大小关系，如果pos与i的索引不相同，那么开始发生交换。
+
+![1609684198592](./img/1609684198592.png)
+
+所以，pos与j之间的关系，是类似**冒泡排序**的，他们保证了他们所排序过的数，都是有序的，且，能和j发生调换的前提条件时pos所指向的值是比j要大的，那么他原本就应该是排到pos的后面，所以此时位于i位置数与pos发生替换，也不会发生顺序混乱。接着第三次循环。
+
+![1609684233560](./img/1609684233560.png)
+
+如此往复。
+
+``` java
+public void selectSort(int[] array){
+    for(int i=0;i<array.length;i++){
+       int pos = i;
+        for(int j=1;j<array.length;j++){
+            if(array[pos]>array[j]){
+                //索引发生替换
+                pos = j;
+            }
+        }
+        //如果索引不相同，则意味着pos和j没发生任意一次替换,那么就什么也不做
+        if(pos!=j){
+            int arr = array[pos];
+            array[pos]=array[i];
+            array[i]=arr;
+        }
+    }
+}
+```
+
+选择排序的交换只交换一次，就是在pos与j的比较的时候，而冒泡只要发现大小不对，就会进行数组值地替换。
+
+时间比较，插入<选择<冒泡。但是数据量上去了，这个时间还是太长了，因为O(n2)对应上百万的数据还是太慢了。
+
+**Quick Sort**
+
+快速排序
+
+![1609773588525](./img/1609773588525.png)
+
+例如给定一串没有规律的数字数组，要使用快速排序算法对他进行排序，我们需要定义三个变量，第一个变量叫做`pivot`，这个变量将会存储`left指针`最一开始循环比对的值，这里一开始是4，所以这里的值就是4，left指针将会指向最左边的值，right的指针指向最左边的值。然后开始循环比对，首先是pivot的值和left比对，由于pivot此时是4，left也是4，因为他们此时指向同一个的，所以相同也是很正常，这里有一个判断依据，当pivot的值不小于left值的时候，left的指针将不会向前移，也就是意味着pivot<=left的时候，left将不会++，反之pivot>left的时候，left将会向right靠近，left++，**总之你一定要保证left所走过的所有数，都应该比此时pivot的数要小，当出现了left比pivot的数要大或者等于地时候，就会停下脚步**。当pivot>=leftt条件成立后，left的索引将不会改变，接着来移动right。和left的条件相反，当pivot>=right的时候，right的位置将会停住，反之，即pivot<right的时候，right指针将会接着向left移动，**总之你一定要保证right所走过地所有数，都应该比此时得pivot的数要大，当出现right比pivot的数要小或者等于的时候，就会停下脚本**。
+
+回到这道题，由于left这个时候和pivot所指向的值相等，所以停住了，left不会再移动，然后是right，right和pivot相比，明显3是比4要小的，所以right也停住了，这个时候，交换right和left所对应的数的位置。
+
+![1609774886705](./img/1609774886705.png)
+
+然后同时移动left和right的索引。
+
+![1609774951362](./img/1609774951362.png)
+
+沿用之前的逻辑，9比4要大吗，答案是肯定的，所以停住，1比4要小吗，答案是肯定的，所以停住，接着我们再交换他们的位置。再次递增他们的索引。
+
+![1609775060794](./img/1609775060794.png)
+
+很明显他们之间依旧可以同时停住，并且交换。
+
+![1609775148914](./img/1609775148914.png)
+
+这里先停一下，至此我们发现了一个规律，那就是left所走过的数都是比pivot的数要小或者相等的，right所走过的数都是比pivot的数要大或者相等，出现了明显的**两级分化**趋势。同理再次递增。
+
+![1609775345969](./img/1609775345969.png)
+
+此时他们错开了，而快速的排序的一个条件是，left<=right的。如果不符合这个规定，之前分好的大小两组将会重新**还原**。所以第一轮得排序结束。
+
+接着是第二轮。
+
+![1609775555654](./img/1609775555654.png)
+
+相当于第一轮，我们就把等待排序的数组已经分成了两组，我们先分对前面的内容进行快速排序。同理，第一次left和pivt相同，所以left停止，然后看right，right的值此时不大于pivot，也就是2不大于3，所以right停住，所以此时left和right进行交换。然后left和right同时增加。
+
+![1609775728458](./img/1609775728458.png)
+
+这个时候，由于left和right已经相同，所以交换停止，这个时候这个被分好地组再次被分成两组。
+
+![1609775998961](./img/1609775998961.png)
+
+这个分组的规则我们可以看出，是以left所走过的为准，剩下的是right所走过的。然后开始对后面的进行快速排序，这里我就直接给出结果。
+
+![1609776129991](./img/1609776129991.png)
+
+![1609776217369](./img/1609776217369.png)
+
+然后最后，再次按照分组，对剩下的内容进行排序。
+
+![1609776298225](./img/1609776298225.png)
+
+最后的结果。
+
+![1609776349377](./img/1609776349377.png)
+
+```java
+public void quickSort(int[] array){
+    sort(array,0,array,length-1);
+}
+
+private void sort(int[] array,int start,int end){
+    if(start>=end){
+        //防止死循环
+        return ;
+    }
+    int pivot = array[start];
+    int left = start;
+    int right = end;
+    while(left<=right){
+        //left所走过的路，都应该比pivot要小，如果大于或者等于就停下脚步
+        while(left<=right&&pivot<array[left]){
+            left++;
+        }
+        while(left<=right&&pivot>array[right]){
+            right++;
+        }
+        //已经确定了，开始交换，并且left和right都递增
+        if(left<=right){
+            int temp = array[left];
+            array[left]= array[right];
+            array[right]=temp;
+            left++;
+            right++;
+        }
+    }
+    //这里的分组地改变，让他们接着递归快速排序
+    sort(array,start,right);
+    sort(array,left,end);
+}
+```
+
+ #### Merge Sort 
+
+归并排序
+
+ 此排序算法将一个等待排序地数组看做是一个大的整体，通过递归将大的整理切割成小到不能再小的小块，简单到只是对两个数进行排序，只是左右交换即可，最后将这些小块从左到右依次**合并**，由于他们是分别排好序的小块，所以两个小块合并成大块会变得简单。但是归并排序需要额外的一块内存空间来存储这些排序后的结果，最后将结果赋值给原先的数组，达到排序的目的。
+
+![1609860452064](./img/1609860452064.png)
+
+给定的一个数组，我们看做是一个整体，然后我们开始将他们切割成若干的小块。就从中间切。
+
+![1609860590047](./img/1609860590047.png)
+
+我们第一次递归将数据切成1和2两个部分
+
+![1609860657726](./img/1609860657726.png)
+
+显然我们还可以接着切割，于是第三次递归，我们将1和2的部分再切更小点。
+
+![1609860843998](./img/1609860843998.png)
+
+很显然，我们已经无法再次切割，于是我们就相当于到底了递归的最低端的了，需要将结果一次排序并合并起来，释放方法栈。
+
+首先是对1的部分，4和9显然是已经排好序了，然后是2，由于1和2是之前的1组分割开的，将2合并到1去，完成之前1组的排序。
+
+![1609861017511](./img/1609861017511.png)
+
+对于后面的3和4也是一个道理
+
+![1609861084317](./img/1609861084317.png)
+
+最后，将1组和2组进行合并，就完成了排序。
+
+![1609861211110](./img/1609861211110.png)
+
+```java
+public void mergeSort(int[] array){
+    //创建用来排序的数据
+    int[] temp = new int[array.length];
+    mergeSortImp(array,0,array.length-1,temp);
+}
+
+private void mergeSortImp(int[] array,int start,int end,int[] temp){
+    //结束标志，表示递归到头不需要再分割
+    if(start>=end){
+        return;
+    }
+    //从中间切割
+    int mid = (start+end)/2;
+    mergeSortImp(array,start,mid,temp);
+    mergeSortImp(array,mid+1,end,temp);
+    merge(array,start,mid,end,temp);
+}
+
+private void merge(int[] array,int start,int mid,int end,int[] temp){
+    int left = start;
+    int right = mid+1;
+    int index = start;
+    while(left<=mid&&right<=end){
+        //比较大小，然后赋值到临时的空间里
+        if(array[left]<array[right]){
+            temp[index++]=array[left++];
+        }else{
+            temp[index++]=array[right++];
+        }
+    }
+    //放置一边走完了，另一边还有没走完的
+    while(left<=mid){
+        temp[index++]=array[left++];
+    }
+    //因为left这边的数一定是比right要小得，因为这里地排序是从小到大
+    while(right<=end){
+        temp[index++]=array[right++];
+    }
+    //赋值给原数组
+    for(index=start;index<=end;index++){
+        array[index]=temp[index]
+    }
+}
+```
+
