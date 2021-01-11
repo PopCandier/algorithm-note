@@ -1,4 +1,4 @@
-#### 算法
+算法
 
 一些算法的总结
 
@@ -2022,15 +2022,15 @@ Tree Tranversal
 ![1610267343161](./img/1610267343161.png)
 
 * 前序遍历(pre-order)
-  * 对于树中的任意节点来说，先打印自己，在打印左子树，再打印右子树
+  * 对于树中的任意节点来说，先**打印自己，在打印左子树，再打印右子树**
   * 以上图为例子，对于根节点A来说，根据规则，会先打印自己，然后打印左子树B然后对于B来说他本体已经打印，所以接下来打印左子树，然后是D，又因为D是树末端，所以无法再次遍历，所以对于B来说他的左子树已经打完，接着是E，至此对于**任意节点B，他这个节点已经打印完了**，然后返回A，A的左子树已经打印完了，所以接下来打印C，而对于C来说，由于他没有左子树，所以直接打印F，然后是G，所以顺序是
   * `ABDECFG`
 * 中序遍历(in-order)
-  * 对于树中的任意节点来说，先打印左子树，再打印自己，最后打印右子树
+  * 对于树中的任意节点来说，先**打印左子树，再打印自己，最后打印右子树**
   * 以A来说，先打印左，所以先打印B，对于B来说先打印D，因为D没有子节点，就回去打印B即打印自己，然后打印E，然后网上打印A，所以顺序是
   * `DBEACGF`
 * 后序遍历(post-order)
-  * 对于树中的任意节点来说，先打印左子树，再打印右子树，再打印本身
+  * 对于树中的任意节点来说，先打印**左子树，再打印右子树，再打印本身**
   * `DEBFGCA`
 * 层级遍历(level-order)
   * 从上至下，从左至右
@@ -2041,3 +2041,137 @@ Tree Tranversal
 ![1610268911972](./img/1610268911972.png)
 
 这样的二叉树，使用中序遍历的结果是 `2 5 7 10 17 19`，所以这是二叉树才有的特性，因为左子节一定比父节点要小，后者要大。
+
+##### 前序遍历
+
+Pre Order Traversal
+
+```java
+// 使用递归
+public class TreeNode{
+    int val;
+    TreeNode left;
+    TreeNode right;
+    TreeNode(){}
+    TreeNode(int val){this.val=val;}
+    TreeNode(int val,TreeNode left,TreeNode right){
+        this.val = val;
+        this.left = left;
+        this.right = right;
+    }
+}
+// 使用递归方式实现
+public List<Integer> preorderTraversal(TreeNode root){
+    List<Integer> result = new ArrayList<Integer>();
+    if(root==null){
+        return result;
+    }
+    
+    List<Integer> left = preorderTraversal(root.left);
+    List<Integer> right = preorderTraversal(root.right);
+    //前序排列规则，先打印自己，在打印左边，在打印右边
+    result.add(root.val);
+    result.addAll(left);
+    result.addAll(right);
+    
+    return result;
+}
+
+// 使用非递归方式实现
+public List<Integer> preorderTraversal(TreeNode root){
+    List<Integer> result = new ArrayList<Integer>();
+    if(root==null){
+        return result;
+    }
+    // 思考一个问题，即，我们在遍历完了自己后，要去找左，然后左找完了后，又会回到右，这样的可以类似找回历史的数据结构用什么来做呢，答案很明显，是栈
+    Stack<Integer> stack = new Stack<Integer>();
+    //添加一个启动元素
+    stack.push(root);
+    while(!stack.isEmpty()){
+        //首先，我们要取出要压栈得元素
+        TreeNode node=stack.pop();
+        //获得值
+        result.add(node.val);
+        //因为需要先遍历左边，但是由于Stack的特殊的结构，先进后出，所以我们应该先存入右边
+        if(node.right!=null){
+            stack.push(node.right);
+        }
+        if(node.left!=null){
+            stack.push(node.left)
+        }
+    }
+    return result;
+}
+```
+
+![1610374394916](./img/1610374394916.png)
+
+#### 中序遍历
+
+inOrder Traversal
+
+**先左，自己，再右边。**
+
+```java
+// 使用递归
+public class TreeNode{
+    int val;
+    TreeNode left;
+    TreeNode right;
+    TreeNode(){}
+    TreeNode(int val){this.val=val;}
+    TreeNode(int val,TreeNode left,TreeNode right){
+        this.val = val;
+        this.left = left;
+        this.right = right;
+    }
+}
+// 标准模版 使用递归
+public List<Integer> inorderTraversal(TreeNode root){
+    List<Integer> result = new ArrayList<Integer>();
+    if(root=null){
+        return result;
+    }
+    List<Integer> left = inorderTraversal(root.left);
+    List<Integer> right = inorderTraversal(root.right);
+    
+    //先添加左边，再添加中间，再添加右边
+    result.addAll(left);
+   	result.add(root)
+    result.addAll(right);
+    
+    return result;
+}
+//第二种
+public List<Integer> inorderTraversal(TreeNode root){
+    List<Integer> result = new ArrayList<Integer>();
+    if(root==null){
+        return result;
+    }
+    
+    Stack<Integer> stack = new Stack<Integer>();
+    TreeNode currentNode = root;
+    
+    while(currentNode!=null||!stack.isEmpty()){
+        
+        while(currentNode!=null){
+            //由于我们要从left开始遍历，所以我们不得不找到需要遍历的树的最左得子节点
+            stack.push(currentNode);
+            currentNode = currentNode.left;
+        }
+        //如果能跳出上面的循环，说明已经找到某个节点的最左边得节点
+        //所以我们需要弹出结果进行累加
+        TreeNode n = stack.pop();
+        result.add(n.val);
+        //再看看右边有没有节点
+        currentNode = currentNode.right;
+    }
+    return result;
+}
+```
+
+![1610376800656](./img/1610376800656.png)
+
+又因为B的right是有值得，所以会进入下一层循环，在进入第二层循环的时候，由于current不为null，所以我们进入，然后将当前的current压入，也就是上次循环得right节点，然后将他地left取出，看存不存在left，发现没有left，跳出第二层循环，记录被压入的E，再看看E的right赋值。然后再次下一次循环，发现current为空，不走第二次循环，直接取出A的节点。之后的步骤雷同。
+
+![1610377099880](./img/1610377099880.png)
