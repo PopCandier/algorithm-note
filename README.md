@@ -2137,7 +2137,7 @@ public List<Integer> inorderTraversal(TreeNode root){
     
     //先添加左边，再添加中间，再添加右边
     result.addAll(left);
-   	result.add(root)
+   	result.add(root.val)
     result.addAll(right);
     
     return result;
@@ -2174,4 +2174,95 @@ public List<Integer> inorderTraversal(TreeNode root){
 
 又因为B的right是有值得，所以会进入下一层循环，在进入第二层循环的时候，由于current不为null，所以我们进入，然后将当前的current压入，也就是上次循环得right节点，然后将他地left取出，看存不存在left，发现没有left，跳出第二层循环，记录被压入的E，再看看E的right赋值。然后再次下一次循环，发现current为空，不走第二次循环，直接取出A的节点。之后的步骤雷同。
 
-![1610377099880](./img/1610377099880.png)
+![1610377099880](./img/1610377099880.png)                                                                                                                                         
+
+#### 后续遍历
+
+PostOrderTraversal    
+
+```java
+//万精油写法
+public List<Integer> postorderTraversal(TreeNode root){
+    List<Integer> result = new ArrayList<String>();
+    if(root==null){
+        return result;
+    }
+    
+    List<Integer> left = postorderTraversal(root.left);
+    List<Integer> right = postorderTraversal(root.right);
+    
+    //先左后右再中间
+    result.addAll(left);
+    result.addAll(right);
+    result.add(root.val);
+    
+    return result;
+}
+//断子绝孙法则，不推荐，因为计算值需要取消掉原节点之间的关系
+public List<Integer> postorderTraversal(TreeNode root){
+    List<Integer> result = new ArrayList<String>();
+    if(root==null){
+        return result;
+    }
+    Stack<Integer> stack = new Stack<Integer>();
+    stack.push(root);
+    while(!stack.isEmpty()){
+        //窥探一下
+        TreeNode node=stack.peek();
+        //当左右两边都没有值得时候，才会开始计算
+        if(node.left==null&&node.right==null){
+            //因为下面断绝了关系，所以才可以进入这个方法
+            result.add(stack.pop().val);
+        }
+        //由于栈得特殊性，先压右
+        if(node.right!=null){
+            stack.push(node.right);
+            //取消关系
+            node.right=null;
+        }
+        if(node.left!=null){
+            stack.push(node.left);
+            node.left=null;
+        }
+    }
+    return result;
+}
+
+//第三种比较难理解的，但是画图还是很好理解地方法
+public List<Integer> postorderTraversal(TreeNode root){
+    List<Integer> result = new ArrayList<String>();
+    if(root==null){
+        return result;
+    }
+    Stack<TreeNode> stack = new Stack<TreeNode>();
+    TreeNode pre = null;
+    TreeNode current = root;
+    
+    stack.push(root);
+    
+    while(!stack.isEmpty()){
+        current = stack.peek();
+        
+        if(pre==null||pre.left==current||pre.right==current){
+            //能够进入到这里面的，表示current和pre是父子节点关系
+            if(current.left!=null){
+                stack.push(current.left);
+            }else if(current.right!=null){
+                stack.push(current.right);
+            }
+        }else if(current.left == pre){
+            //能够进入这里面，说明left已经这边已经遍历完了，正准备回头遍历right节点
+            if(current.right!=null){
+                stack.push(current.right);
+            }
+        }else{
+            //开始计算
+            result.add(current.val);
+            stack.pop();
+        }
+        pre = current;
+    }
+    return result;
+}
+```
+
