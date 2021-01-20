@@ -1,4 +1,4 @@
-算法
+### 算法
 
 一些算法的总结
 
@@ -1556,8 +1556,6 @@ public int trap(int[] number){
 
 都是O（n2）时间复杂度得算法
 
-
-
 ```java
 public void bubboSort(int[] nums){
     if(num==null||num.length==0){
@@ -2348,4 +2346,75 @@ public List<Integer> postorderTraversal(TreeNode root){
 * 兄弟节点的左孩子设置为黑色
 * 将父节点设置为黑色
 * 将父节点进行右旋转
+
+###### 二叉树的右视角
+
+Binary Tree Right Side View
+
+```
+Input:[1,2,3,null,5,null,4]
+Output:[1,3,4]
+Explanation:
+	1		<---
+   / \
+  2	  3		<---
+   \   \
+    5   4	<--- 从这里看，只能看到二叉树的右边
+```
+
+代码实现
+
+```java
+public class TreeNode{
+    int val;
+    TreeNode left;
+    TreeNode right;
+    TreeNode(){}
+    TreeNode(int val){this.val=val;}
+    TreeNode(int val,TreeNode left,TreeNode right){
+        this.val = val;
+        this.left = val;
+        this.right = right;
+    }    
+}
+
+
+public List<Integer> rightSideView(TreeNode root){
+ 	List<Integer> result = new ArrayList<Integer>();
+    if(root==null){
+        return result;
+    }
+    Queue<Integer> queue = new LinkedList<Integer>();
+    // fire
+    queue.offer(root);
+    boolean findRight = false;
+    while(!queue.isEmpty()){
+        int size = queue.size();
+        findRight = false;
+        for(int i=0;i<size;i++){
+            TreeNode node = queue.poll();
+            if(!findRight){
+                //因为是先添加的右边，根据先进先出原则，这边出来的一定是右边
+                // 如果右边没有那么加入的就是左，也成立，如果你右边没有肯定是可以看到左边得
+                //找到了右边
+                result.add(node.val);
+                findRight = true;
+            }
+            
+            if(node.right！=null){
+                queue.offer(node.right);
+            }
+            
+            if(node.left!=null){
+                queue.offer(node.left);
+            }
+        }
+    }
+    return result;
+}
+```
+
+![1611156408088](./img/1611156408088.png)
+
+
 
