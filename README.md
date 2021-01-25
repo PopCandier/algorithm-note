@@ -2511,3 +2511,115 @@ public List<Integer> rightSideView(TreeNode root){
 
 
 
+### 二叉树的最近公共祖先
+
+Lowest Common Ancestor of as Binary Tree
+
+![1611582372390](./img/1611582372390.png)
+
+假设有以上的二叉树，给两个节点，找出这两个节点的最近公共祖先。
+
+例如，给6和2，那么他们的最近公共祖先就是5，如果给的是5和4，那么他们地公共祖先依旧是5，也就是说给定得两个节点，有可能其中一个就有可能是祖先，也就是答案。
+
+```java
+public class TreeNode{
+    int val;
+    TreeNode left;
+    TreeNode right;
+    TreeNode(int x){val=x;}
+}
+
+public TreeNode lowestCommonAncestor(TreeNode root,TreeNode A,TreeNode B){
+    //首先，从根节点开始，找AB的最近父节点
+    //当根节点为空的时候，直接返回根节点
+    //在之后的若干次递归中，代表是否已经找到了目标节点
+    if(root==null||root==A||root==B){
+        return root;
+    }
+    
+    TreeNode left = lowestCommonAncestor(root.left,A,B);
+    TreeNode right = lowestCommonAncestor(root.right,A,B);
+    
+    if(left!=null&&right!=null){
+        return root;
+    }
+    //走到这里一步只有两种情况，已经找到了目标节点，或者没找到返回了空
+    //如果left找到了的话，就返回
+    if(left!=null){
+        return left;
+    }
+    if(right!=null){
+        return right;
+    }
+    return null;
+}
+//其实这是一个二叉树的后续遍历
+```
+
+#### 平衡二叉树
+
+Balanced Binary Tree
+
+这是给定一个二叉树，然后判断这个树是是不是平衡二叉树。
+
+```
+	3
+   / \
+  9   20
+  	 /  \
+  	15	 7
+左右子树高度相差不超过1，则他是平衡的
+		1
+	   / \
+	  2	  2
+	 / \
+	3   3
+   / \
+  4	  4
+左右子树高度超过了1，所以他是不平衡的
+```
+
+代码实现
+
+```java
+// 如果是平衡的二叉树，则返回true。否则返回false
+public boolean isBalanced(TreeNode root){
+    if(root==null){
+        //为空的话，一定是平衡的
+        return true;
+    }
+    return maxTree(root)!=-1;
+}
+
+public int maxTree(TreeNode node){
+    if(node==null){
+        //已经到头返回0
+        return 0;
+    }
+    int left = maxTree(node.left);
+    int right = maxTree(node.right);
+    if(left==-1||right==-1||Math.abs(left-right)>1){
+        //当左右两边子节点高度相差超过1得时候，会返回-1
+        // 一旦发现有超过1的右边节点，将会一直返回-1，知道结束，告知此二叉树非平衡
+        return -1;
+    }else{
+        //当还没找到超过1的相差得时候，将会一直做累加操作
+        //首先找到最底部的子节点，这个时候是上面的return 0 的结果，到这里位置将会返回1，然后不断的累加1
+        return Math.max(left,right)+1;
+    }
+    
+}
+/*
+ 以上面的第一个例子举例，根节点是3
+   第一次进入
+   看left 节点，返回9，9没有左子节点，所以返回0，同样9也没有右子节点，所以也返回0
+   在9这个节点，将会返回1 Math.max(0,0)+1;
+   
+   左子树遍历完了，看右子树
+   同理，15和 7 都将返回1，然后 20 将会返回2，Math.max(1,1)+1;
+   
+   当左右子数都遍历完后，再看根节点3，9的返回是1，20返回的2，这都表示了左右子树所拥有的层数
+   经过最后的比较，他们依旧符合left-right不大于1，依旧平衡。
+*/
+```
+
