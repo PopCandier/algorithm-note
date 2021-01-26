@@ -2623,3 +2623,118 @@ public int maxTree(TreeNode node){
 */
 ```
 
+### 什么是堆
+
+What is Heap
+
+是一个用数组实现的**二叉树**
+
+不同的语言，实现堆的方式不同，对于java来说是叫做 PriorityQueue（优先队列）
+
+堆有两个种
+
+* 最大堆
+
+  * 父节点的值比每个子节点的值都要大
+
+  * ```
+    	11
+    	/ \
+    	8	3
+       / \
+       6  2
+    ```
+
+    
+
+* 最小堆
+
+  * 父节点的值比每个子节点的值都要小
+
+也被称为**堆属性**
+
+这和二叉查找树的属性略有不同，二叉查找树左子节点比父节点要小，右子节点比父节点要大。同时平衡二叉树在满足平衡的情况下，性能会达到O(logn)，但是堆却不需要满足平衡，我们只需要满足他地堆属性就可以达到logn的时间复杂度。平衡二叉树的搜索性能很好，但是堆的搜索性能并不高，这是因为搜索并不是他的优先级，他的插入顺序决定了他的弹出元素的顺序是高效得，父节点比下面所有节点都大或者小。
+
+
+
+#### 第K大元素
+
+top k largest
+
+给定一个无序的数组，然后给一个k值，找在这个数组里，第k大的值
+
+例如给定一个数组[3,2,1,5,6,4]，k=2，在这里，第2大的是5，所以会输出5。
+
+又一个数组[3,2,3,1,2,4,5,5,6],k=4，将会返回4，即便5重复了，也算是占一个排序位置。
+
+```java
+public int findKthLargest(int[] nums,int k){
+    if(nums==null||nums.length==0||k<1||k>nums.length){
+        return -1;
+    }
+    
+    PriorityQueue<Integer> maxHeap = new PriorityQueue<Integer>(k,new Comparator<Integer>(){
+        public int compare(Integer num1,Integer num2){
+            return num1-num2;
+        }
+    });
+    
+    for(int i : nums){
+        maxHeap.add(i);
+    }
+    //以上会按最大堆的顺序进行组建树
+    
+    for(int i =0;i<k-1;i++){
+        maxHeap.poll();
+    }
+    return maxHeap.poll();
+    
+    
+}
+
+//使用快速排序解决，方法的最优解
+public int findKthLargest(int[] nums,int k){
+    if(nums==null||nums.length==0||k<1||k>nums.length){
+        return -1;
+    }
+    return partition(nums,0,nums.length-1.nums.length-k);
+}
+
+public int partition(int[] nums,int start,int end,int k){
+    
+    if(start>=end){
+        return nums[k];
+    }
+    int left = start;
+    int  right = end;
+    int pivot = nums[(start+end)/2];
+    while(left<=right){
+        while(left<=right&&nums[left]<pivot){
+            left++;
+        }
+        while(left<=right&&nums[right]>pivot){
+            right++;
+        }
+        if(left<=right){
+            //互换
+            int temp = nums[left];
+            nums[left]=nums[right];
+            nums[right]=temp;
+            left++;
+            right++;
+        }
+    }
+    //说明目标在左边
+    if(k<=right){
+        return partition(nums,start,right,k);
+    }
+    //说明目标在右边
+    if(k>=left){
+        return partition(nums,left,end,k);
+    }
+    return nums[k];
+    
+}
+
+```
+
