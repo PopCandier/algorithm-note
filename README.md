@@ -2639,8 +2639,8 @@ What is Heap
 
   * ```
     	11
-    	/ \
-    	8	3
+      	/ \
+      	8	3
        / \
        6  2
     ```
@@ -2736,5 +2736,176 @@ public int partition(int[] nums,int start,int end,int k){
     
 }
 
+```
+
+#### 从数据流里面找中位数
+
+find median from Data Stream
+
+```
+例如给定一串数字，找到这串数字里面的中位数
+中位数在给定数组是偶数的情况下，找到中间靠左边的数，例如
+给定[1,2,3,4]
+那么中位数就是2
+如果给定数组是奇数的情况下，那就是中间的位置了，这没什么好质疑的
+[1,2,3,4,5]中位数是5
+这道题，将会按照顺序依次给数据添加值，每次添加值你都需要找出这个目前已添加值得数组里的中位数
+例如，[1] 中位数 是1，[1,2]中位数是1,[1,2,3]中位数是2,[1,2,3,4]中位数是2，[1,2,3,4,5]中位数是3，所以，给你一串这样的数组
+[1,2,3,4,5]
+你的输出就是
+[1,1,2,2,3]
+```
+
+解出这道题，我们需要用到两个堆，一个最大堆(maxHeap)一个最小堆(minHeap)，用这两个判断每次添加进来的值应该放在哪个位置，最大堆中每个父节点都会大于其下面的所有子节点，最小堆中每个父节点都会小于其下方子节点，其实就相当于给传进来的数据，进行了默认的**排序**，用来划分中间值的界限。
+
+```java
+public int[] median(int[] nums){
+    if(nums==null||nums.length==0){
+        int[] ins = new int[0];
+        return ins;
+    }
+    int count = nums.length;
+    //最大堆 maxHeap
+    PriorityQueue<Integer> maxHeap = new PriorityQueue<Integer>(count,new Comparator<Integer>(){
+        public int compare(Integer num1,Integer num2){
+            return num2-num1;
+        }
+    });
+    //最小堆
+    PriorityQueue<Integer> minHeap = new PriorityQueue<Integer>(count);
+    //准备输出的返回值
+    int[] answer = new int[count];
+    int numbers = nums[0];//放入第一个值
+    answer[0] = number;
+    for(int i =1;i<count;i++){
+        int target = nums[i];
+        if(nums[i]>number){
+            //如果当前节点，大于目前已经确定的中间值，那么久放到min队列，由于minHeap是从小到大摆列，所以当我们弹出第一个元素的时候，一定是最小的那个弹出
+            minHeap.add(target);
+            // 接着将number的值更新
+        }else{
+            //反之放入maxHeap，由于maxHeap里面存在了由大到小的数字排列，所以弹出的第一个元素一定是最大的那个
+            maxHeap.add(target);
+        }
+        //为了保证平衡，我们要计算已经放入了两个堆和number的数值是否合理
+        if(Math.abs(maxHeap.size()-minHeap.size())>1){
+            if(minHeap.size()>maxHeap.size()){
+                //说明minHeap比maxHeap大，要分一个给maxHeap保持平衡
+                maxHeap.add(number);
+                //更新值
+                number = minHeap.poll();
+            }else{
+                minHeap.add(number);
+                number = maxHeap.poll();
+            }
+        }else{
+            //相差 0 或者 为1的情况，却maxHeap比minHeap大一个的情况，且maxHeap的最大值是比当前中间值小的情况，那么就做中间值的替换，和平衡
+            if(maxHeap.size()-minHeap.size()==1&&maxHeap.peek()<number){
+                minHeap.add(number);
+                number = maxHeap.poll();
+            }
+        }
+        answer[i] = number;
+    }
+    return answer;
+}
+```
+
+以`[4,5,1,3,2,6,0]`为例子
+
+![1612071725703](./img/1612071725703.png)
+
+其实maxHeap和minHeap的作用主要是为了保证，两边的节点应该是平衡的，当不平衡的时候，也就是maxHeap与minHeap的大小不一致的时候，就会存在当前已经确定的numbe中间值发生变动的情况，这个时候，你就需要判断是哪个多哪个少，如果是超过了**容忍**1的时候，那么就需要再次平衡，更新中间值。因为当容量是这个偶数的情况，那么就意味着要去中间值的左的第一个节点，就对应了上图插入了3元素的情况，相当于在1345中取中间值，所以是3。
+
+### 什么是散列
+
+What is Hash？
+
+**将任意长度的输入通过散列算法转化为固定长度的输出，该输出就是散列值。**
+
+例如，md5，md4，sha1等都是hash算法的具体落地，签名校验，密码校验，数据完整性等的校验运用广泛，最长用就是我们的用户登录的密码校验。
+
+#### HashMap 解析
+
+Deep Dive  HashMap?
+
+扔袜子理论，当你进入一个脏乱的屋子，你随手丢了一件衣服，然后你又随手丢了一串钥匙，最后你随手丢了一只袜子，当你想要找到你丢的袜子的时候，需要保证你丢另一个东西的角度和力度和你上次丢袜子的角度力度一致就可以找到，hashMap也是同样原理。key通过相同的散列算法可以准备找到map中所对应的value。
+
+jdk1.6，1.7中hashMap为桶与链表，1.8当桶中的列表超过8个时候，会转换为红黑树。负载因子超过0.75会自动扩容。
+
+#### 子数组和等于K
+
+SubarraySumEqualsK
+
+这里使用一个**前缀和数**的概念。上面也有具体解释前缀和数的东西，可以查找看看。
+
+![1612075477475](./img/1612075477475.png)
+
+
+
+给你一串数字，在给你一个k值，要你计算给定这一串数字，任意两个数字之和相加等于k值出现的次数
+
+```
+给一个[1,1,1]，k=2
+那么在这个数组里，两个数合计为2的出现次数是2，所以输出为2
+```
+
+```java
+public int subarraySum(int[] nums,int k){
+    if(nums==null||nums.length==0){
+        return 0;
+    }
+    //用于存储重复的数值
+    Map<Integer,Integer> map = new HashMap<Integer,Integer>();
+    //计算前缀和数
+    for(int i =1;i<nums.length;i++){
+        nums[i]+=nums[i-1];
+    }
+    //对应k值得重复次数
+    int ans = 0;
+    int temp = 0;
+    map.put(0,1);
+    for(int i=0;i<nums.length;i++){
+        if(map.containsKey(nums[i]-k)){
+            //反向利用前缀和数，利用减数与结果，推导出另一个减数，此时的减数是否有出现在map中，
+            //前缀和数的数组出现了多少次，就意味着有多少相减等于k的情况
+            ans+=map.get(nums[i]-k);
+        }
+        //这里只是为了计算出现次数
+        temp = map.containsKey(nums[i])?map.get(nums[i])+1:1;
+        map.put(num[i],temp)；
+    }
+    return ans;
+}
+/**
+对[1,1,1]做前缀和数处理
+得到 [1,2,3]
+map = 0->1
+
+第一次循环
+1-2=-1，-1在map中不存在，走下面
+ans=0
+temp中不存在值，map中也不存在1，所以map添加
+map = 0->1
+	  1->1
+	  
+第二次循环
+2-2=0,0在map中存在，对ans进行累加
+ans=1
+temp中不存在2的值，所以也为1
+map = 0->2
+	  1->1
+	  2->1
+	  
+第三次循环
+3-2=1,1在map中存在，对ans累加
+ans=2
+1在map中存在，就进行计算
+map = 0->2
+	  1->2
+	  2->1
+	  3->1
+
+/
 ```
 
