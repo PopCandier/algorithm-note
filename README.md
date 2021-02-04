@@ -3114,3 +3114,90 @@ What is BFS？
 ![1612277303949](./img/1612277303949.png)
 
 上图是一个**无向图**，从A开始访问，你可以获得CDF的关系，从而通过C你可以获得B，B其实也可以访问D，但是因为A已经访问过了，所以没有再次访问的必要，然后是D，D可以访问到节点还没有画出来，但是也是很多的，起码他周围的一圈都可以访问的，然后是F，和B的情况一样，我们可以发现，这个访问数量是和**病毒**一样传播开来的。知道所有节点都可以访问完成。
+
+​    
+
+ #### 小岛问题
+
+Number of Island
+
+给定一个二维数据，计算二维数组里面小岛的数量
+
+```
+grid = [
+    ["1","1","1","1","0"],
+    ["1","1","0","1","0"],
+    ["1","1","0","0","0"],
+    ["0","0","0","0","0"]
+]
+1 表示是陆地，0表示海洋，这个二维数组要看成是一个图，上面的1能够连成一片，这就算作是一个岛
+所以这个会输出一个海岛，答案是1
+grid = [
+    ["1","1","0","0","0"],
+    ["1","1","0","0","0"],
+    ["0","0","1","0","0"],
+    ["0","0","0","1","1"]
+]
+上面的就是有三个小岛，也就是输出为3
+```
+
+这道题的关键点其实有两点，第一点是找到**小岛**，也就是为1的元素，将他们全部标记成**已访问**，这一点很重要，避免下次在使用BFS算法去走遍**未知区域**所带来的性能消耗。当碰到0的时候，也就是海的停止访问，等待下一次再次遇到海岛也就是1的情况。
+
+```java
+public int sumIsland(char[][] island){
+    if(island==null||island.length==0){
+        return 0;
+    }
+    int row = island.length;
+    int col = island[0].length;
+    int number = 0;
+    // 已访问节点
+    boolean[][] visited = new boolean[row][col];
+    for(int i=0;i<row;i++){
+        for(int j=0;j<col;j++){
+            //当碰到还没有访问过的1的时候，去走遍海岛，直到碰到的是0，也就是海边的时候
+            if(island[i][j]=='1'&&!visited[i][j]){
+                bfs(island,i,j,visited);
+                number++;
+            }
+        }
+    }
+    return number;
+    
+}
+
+private bfs(char[][] island,int row,int col,boolean[][] visited){
+    // 用于上下左右的移动的坐标
+    int[] bx = [1,-1,0,0];
+    int[] by = [0,0,1,-1];
+    //将当前访问的节点，设置为已访问
+    visited[row][col] = true;
+   	int rowLength = island.length;
+    int colLength = island[0].length;
+   	Queue<Integer> queueX = new LinkedList<Integer>();
+    Queue<Integer> queueY = new LInkedList<Integer>();
+    queueX.offer(row);
+    queueY.offer(col);
+    
+    while(!queueX.isEmpty()){
+        int x = queueX.poll();
+        int y = queueY.poll();
+        for(int i=0;i<4;i++){
+            //上下移动新的坐标
+            int newX = x+bx[i];
+            int newY = y+by[i];
+            if(newX>=0&&newY>=0&&newX<rowLength&&newY<colLength&&!visited[newX][newY]){
+                if(islandp[newX][newY]=='1'){
+                	//当得到的新坐标不小于0，因为数组的索引也不可能为0，且不会越界的时候，然后是没有被访问的时候，将它添加进下一次循环
+                queueX.offer(newX);
+                queueY.offer(newY);
+                //设置成已经访问
+                visited[newX][newY] = true;    
+                }
+            }
+        }
+    }
+}
+```
+
+只要碰到1，就证明是已经发现了海岛，那么就开始走遍海岛地每个角落，且标记成已经访问，这样地标记的好处在于，能够省去下次遍历的时候再次走同一个海岛的尴尬。由于每当遇到一个还没访问的海岛的时候，就会将以这个已经未访问的海岛的点开始，上下左右的去进行迭代循环寻找还未找到的属于这块已知海岛的地盘，直到碰到水为止，就会走出queue的循环，虽然主流程是双循环，但因为已经访问的visited的行列索引将表示的值已经是true所以已经不会访问，当代下次找到的海岛的情况。
