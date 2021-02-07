@@ -3201,3 +3201,116 @@ private bfs(char[][] island,int row,int col,boolean[][] visited){
 ```
 
 只要碰到1，就证明是已经发现了海岛，那么就开始走遍海岛地每个角落，且标记成已经访问，这样地标记的好处在于，能够省去下次遍历的时候再次走同一个海岛的尴尬。由于每当遇到一个还没访问的海岛的时候，就会将以这个已经未访问的海岛的点开始，上下左右的去进行迭代循环寻找还未找到的属于这块已知海岛的地盘，直到碰到水为止，就会走出queue的循环，虽然主流程是双循环，但因为已经访问的visited的行列索引将表示的值已经是true所以已经不会访问，当代下次找到的海岛的情况。
+
+#### 单词梯
+
+Word Ladder
+
+ 给定一个开始单词，一个结束的单词，然后再给你一个字典，要你从开始单词这里去字典里面去找，要在字典里变化多少次，才会变成结束的单词。一次只能变换一个字母。
+
+```
+例如
+start="a" end="c" dic=["a","b","c"];
+变化流程就是
+a->c,输出为2，因为一次变化一个单词，a要变化到c，只需要变化一次，在字典里找到。
+
+另一个例子
+start = "hit" end="cog" dic=["hot","dot","dog","lot","log"]
+变化流程是
+hit->hot->dot->dog->cog
+一共是五次，所以输出为5
+```
+
+代码实现，首先，解题思路是从start到end的变化，且这个变化一定要在给定的dic里面去获得，一次只能变化一个单词，那么**如何变换**就是一个比较关键的点，这个变化设计，从单词哪里开始改变，变换的结果符不符合要求等，而且你变换的单词可能有多重解法，例如。hit->hot ，hot不止可以变成dot，也可以变成lot，所以我们还可以有这样一条分支`hit->hot->lot->log->cog`，所以利用bfs，宽度优先搜索的概念，我们可以使用queue一层一层的将可能的路径都遍历出来，体现一个扩散的概念，和上面的小岛问题是一样的。
+
+``` java
+public int ladderLength(String start,String end,Set<String> dict)
+{
+    //只有有一步
+    int step = 1;
+    if(dict==null){
+        return 0;
+    }
+    //将最后的结果先添加进去
+    dict.add(end);
+    //用于bfs的队列，很重要，bfs必用的数据结构
+    Queue<String> queue = new LinkedList<String>();
+    //加入第一个搜索值
+    queue.offer(start);
+    
+    Set<String> duplicate = new HashSet<String>();
+    duplicate.add(start);
+    
+    while(!queue.isEmpty()){
+        //首先每次新循环，可能都有不同的路线，我们将路线记录下来
+        //同时，这个steps将会返回最短的路径，因为找到就会直接返回。
+        int size = queue.size();
+        steps++;
+        for(int i =0;i<size;i++)
+        {
+            String word = queue.poll();
+            /**
+            找出只现有的单词，在单词的某个位置变化成某个字母，却命中了
+            所给了dict的若干个结果。
+            例如hot随机变化，却有命中了dic中的两个结果，一个dot和lot
+            所以这里要记录下来
+            */
+            List<String> nextWords = getNext(word,dict);
+            //接着将结果添加进下一次循环
+            for(String next:nextWords)
+            {
+                if(duplicate.contains(next))
+                {
+                    //已经走过。不再走下一次
+                    continue;
+                }
+                //变化的单词已经是end得结果，直接返回
+                if(next.equals(end))
+                {
+                    return steps;
+                }
+                //否则添加去寻找下一种可能
+                duplicate.add(next);
+                queue.offer(next);
+            }
+        }
+    }
+    return steps;
+}
+
+public List<String> getNext(String word,Set<String> dict)
+{
+    List<String> next = new ArrayList<String>();
+    //如何变换，最暴力，从a-z开始变化
+    for(int i ='a';i<'z';i++)
+    {
+        //从给定得word单词，哪个位置开始计算
+        for(int j=0,len=word.length();j<len;j++){
+            //								对象单词，变化的字母是什么，从哪里开始变换
+            String potentialNext = changeWord(word,i,j);
+            //查看变化的单词是否符合dic里面的词
+            if(dict.contains(potentialNext))
+            {
+                next.add(potentialNext);
+            }
+        }
+    }
+    return next;
+}
+
+public String changeWord(String word,char c,int i)
+{
+    char[] words = word.toCharArray();
+    words[i] = c;
+    return new String(words);
+}
+```
+
+##### 关于BFS(宽度优先搜索的总结)
+
+之前说过的是，BFS所对应的是**有向图**，即一次只能往一个方向前进，直到全部路径都走完又或者**扩散**完成，就像是一层一层的走完，每走一层就会有新的可能性，例如之前的小岛问题，当你找到第一个1的时候，意味着你必须上下左右**扩散**来寻找是否周围还有陆地的可能性，当你决定要上下左右去找的时候，其实就是新的一层维度，即对于往下的维度，往上地维度，往左或往右的维度，对于程序来说，看起来就像另一层，或者说另一个层次，当你地某个层次找到了是0的时候，即海洋的部分，将会停止前进。直到找到第二个1，也就是新的大陆位置，他们又会开始扩散这种查找的能力。
+
+对于单词梯而言，通过替换目的单词的某个位置的某个字母，来达到新的维度，层数，和可能性地探查，直到找到end作为结果返回。
+
+这些BFS的算法其实离不开一个数据结果，那就是**Queue**，之所以queue很重要的一定是，我认为先进先出的模型很适合BFS的算法风格，也是有向图，层的这个概念，当你找到新的一层的时候，你会将这一层的全部数据一口气塞进queue里面，这样当你去消耗queue里面的数据地时候，也是按照你插入的顺序进行消耗的，也就是**那一层**正在有规律被你使用，而且每当你使用一个层的数据后，你会将它从queue里面弹出，然后新的下一层地数据插入进来，完成一种特殊的迭代效果。也可以理解成一组，一组的有规律的消耗，来达到找到目标的作用。
+
