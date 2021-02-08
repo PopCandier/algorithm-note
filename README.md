@@ -3314,3 +3314,196 @@ public String changeWord(String word,char c,int i)
 
 这些BFS的算法其实离不开一个数据结果，那就是**Queue**，之所以queue很重要的一定是，我认为先进先出的模型很适合BFS的算法风格，也是有向图，层的这个概念，当你找到新的一层的时候，你会将这一层的全部数据一口气塞进queue里面，这样当你去消耗queue里面的数据地时候，也是按照你插入的顺序进行消耗的，也就是**那一层**正在有规律被你使用，而且每当你使用一个层的数据后，你会将它从queue里面弹出，然后新的下一层地数据插入进来，完成一种特殊的迭代效果。也可以理解成一组，一组的有规律的消耗，来达到找到目标的作用。
 
+
+
+### 什么是深度优先搜索
+
+What is DFS？
+
+遍历树或者图的搜索。递归，有点像是树的前中后序遍历。
+
+##### Permutations
+
+排列
+
+给一个含有不同数字地集合，要你给出这个数组的全部的排列可能性
+
+```
+例如，给你一个数组[1,2,3]。
+要你输出这样的排列组合
+[
+    [1,2,3],
+    [1,3,2],
+    [2,1,3],
+    [2,3,1],
+    [3,1,2],
+    [3,2,1]
+]
+```
+
+代码实现
+
+```java
+public List<List<Integer>> permute(int[] nums)
+{
+    List<List<Integer>> result = new ArrayList<List<Integer>>();
+    if(nums==null)
+    {
+        return result;
+    }
+    if(nums.length==0){
+        result.add(new ArrayList<Integer>());
+        return result;
+    }
+    // 装排列可能性的list
+    List<Integer> list = new ArrayList<Integer>();
+    helper(result,nums,list);
+    return result;
+}
+
+private void helper(List<List<Integer>> result,int[] nums,List<Integer> list)
+{
+    //结束标志
+    if(list.size()==nums.length)
+    {
+        result.add(new ArrayList<Integer>(list));
+        return;
+    }
+    
+    //递归开始
+    for(int i=0;i<nums.length;i++){
+        //防止添加重复的
+        if(list.contains(nums[i])){
+            continue;
+        }
+        list.add(nums[i]);
+        //接着往下找
+        helper(result,nums,list);
+        //然后移除掉
+        list.remove(list.size()-1);
+    }
+}
+/*
+以给的 [1,2,3] 为例子
+在第一次进入helper方法的时候，结束标志不符合，往下走
+循环从 nums[0]也就是1开始，在当前的list中不存在，所以添加到list中此时，list的地内容为
+[1]
+接着，走下一次helper递归，同样不满足结束标志，也是走循环，但是这一次由于1已经被添加进来，所以nums[0]将会continue，走到2，不重复，添加到list中
+[1,2]
+同理，直到第三次递归，list中地情况
+[1,2,3]
+第四次递归，发现list.size()==nums.length成立，所以[1,2,3]的组合被添加到新的ArrayList的对象里面被返回，这个时候返回到第三次递归的方法中，list.remove()，这时候list.size()=3所以，list.remove(list.size()-1)为list.remove(2)，即将3删除这个时候list变为
+[1,2]
+接着第二次递归
+[1]
+这个时候，第二次递归是走到了i=1得位置，所以接着i=2
+[1,3]
+[1,3,2]
+[1,3]
+[1,2]
+[1]
+最后全部条件都返回，1开头就完全排列完了。
+就这样以此类推。完成所有排列组合
+*/
+```
+
+#### Subset
+
+子集
+
+```
+给定一个数字集合，找出这个集合的子集
+[1,2,3]
+输出
+[
+    [1],
+    [2],
+    [3],
+    [1,2],
+    [1,3],
+    [2,3],
+    [1,2,3],
+    []
+]
+```
+
+和之前排列其实很像，之前地排列，要加入到结果集里面的是要和给定得数组是一样的长度的，例如给定得长度是3，所以结果的长度也都是3，这次有些不一样，任意都可以。虽然上限也是3。
+
+``` java
+public List<List<Integer>> subSet(int[] nums){
+    List<List<Integer>> result = new ArrayList<List<Integer>>();
+    if(nums==null){
+        return result;
+    }
+    if(nums.length==0){
+        result.add(new ArrayList<Integer>());
+        return result;
+    }
+    //老样子，准备一个容器
+    List<Integer> list = new ArrayList<Integer>();
+    //这里有一些改动
+    dfs(result,list,nums,0);
+    return result;
+}
+
+private void dfs(List<List<Integer>> result,List<Integer> list,int[] nums,int pos){
+    //这里的终止标志和上面的排序方式会有点不一样，因为我们无法根据长度来判断
+    //而是每次的组合都需要记录下来
+    result.add(new ArrayList<Integer>(list));
+    //然后是循环
+    for(int i =pos;i<nums.length;i++){
+        list.add(nums[i]);
+        //老样子去按照深度去寻找下一种可能性
+        dfs(result,list,nums,i+1);
+        //移除
+        list.remove(list.size()-1);
+    }
+}
+/*
+和排列的区别是我们不再以长度作为判断依据，退出递归，而是加入了pos参数
+第一次进入，添加空集合，也就是list是
+[]
+然后pos=0,i=0,list添加了nums[0]也就是1,list添加了1后，进入第一次递归
+将list中的值添加进result里面
+[]
+	[1]
+此时pos=0+1=1,i=1,也就是list.add(nums[1]),nums[1]是2
+进入第二次递归,将list的结果添加进入result
+[]
+	[1]
+		[1,2]
+接着这个时候的pos=1+1=2，也就是2，num[2]是3，进入第三次递归
+[]
+	[1]
+		[1,2]
+			[1,2,3]
+由于进入第四次递归的时候，pos已经是2+1=3了，第四次递归的循环退出
+退回到第三次递归，删除掉3，在第三次循环中，i=2开始走第二个循环i=3不符合要求，退出循环，来到
+第二次递归，删除掉2，这个时候i=1,接着走循环，i=2,将nums[2]=3添加进来
+[]
+	[1]
+		[1,2]
+			[1,2,3]
+		[1,3]
+但是因为走第三次递归时候，传入的pos已经是3了，所以退出循环，删掉3
+接着返回第二次递归，第二次递归的i=2也变成了i=3，退出循环，删掉1
+所以我们这个时候来到了第一次递归的位置，这个时候i=0，所以变成了1
+[]
+	[1]
+		[1,2]
+			[1,2,3]
+		[1,3]
+	[2]
+接着进入第二次递归
+[]
+	[1]
+		[1,2]
+			[1,2,3]
+		[1,3]
+	[2]
+		[2,3]
+	[3]
+至此子集完成
+*/
+```
+
