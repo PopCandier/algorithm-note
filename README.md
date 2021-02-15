@@ -3507,3 +3507,240 @@ private void dfs(List<List<Integer>> result,List<Integer> list,int[] nums,int po
 */
 ```
 
+#### N皇后
+
+n queues
+
+国际象棋中，皇后棋子可以左右斜角移动。
+
+![1613378512434](./img/1613378512434.png)
+
+而n皇后问题，在n*n的棋盘里放符合要求的皇后棋子，会有几种摆法，规则是皇后和皇后之间不能再彼此的**可行走路线上**
+
+![1613378658323](./img/1613378658323.png)
+
+就像是上图一样 。本题的解题思路和前面两题差不多，要一路走到黑，直到找到正确的答案，中途不符合要求的答案将会被**回退，删除**，找到合适的答案的时候，将会一直走下去，直到达到符合要求的结果。
+
+```java
+/**
+传入n*n的棋盘，判断有几种皇后的摆法
+*/
+public List<List<Integer>> solveNQueues(int n)
+{
+    //放结果的
+    List<List<Integer>> result = new ArrayList<List<Integer>>();
+    
+    if(n<=0){
+        return result;
+    }
+    search(result,new ArrayList<Integer>(),n);
+        
+    return result;
+}
+
+
+public void search(List<List<Integer>> result,List<Integer> cols,int n)
+{
+    
+    //一行一行的
+    if(cols.size()==n){
+        result.add(drawChessboard(cols));
+        return;
+    }
+    
+    for(int colIndex=0;colIndex<n;colIndex++){
+        //判断是否符合放入皇后的条件
+        if(!isValid(cols,colIndex)){
+            continue;
+        }
+        cols.add(colIndex);
+        // 再往深处查找
+        search(result,cols,n);
+        cols.remove(colIndex);
+    }
+    
+}
+
+private boolean isValid(List<Integer> cols,int column){
+    //符合不再直线，竖线，和斜角
+    int row = cols.size();//目前位置的，
+    for(int rowIndex = 0;rowIndex<row;rowIndex++){
+        //同一竖线
+        if(cols.get(rowIndex)==column){
+            return false;
+        }
+        // 之前有过的位置和现在的位置进行比较
+        // 左到右斜线 
+        if(rowIndex - cols.get(rowIndex)==row-column){
+            return false;
+        }
+        // 右到左斜线
+        if(rowIndex+cols.get(rowIndex)==row+column){
+            return false;
+        }    
+    }
+    return false;
+}
+/**
+将棋盘画出来
+*/
+public List<String> drawChessboard(List<Integer> cols)
+{
+    List<String> chessboard = new ArrayList<Integer>();
+    for(int i=0;i<cols.size();i++){
+        StringBuilder sb = new StringBuilder();
+        for(int j  =0;j<cols.size();j++){
+            // row 的值
+            sb.append(j==cols.get(i)?'Q':'.');
+        }
+        chessboard.add(sb.toString());
+    }
+    return chessboard;
+}
+
+```
+
+关于是否在斜方向的盘点，我们可以给以原点构建直角坐标系
+
+![1613390333516](./img/1613390333516.png)
+
+将横纵坐标看成x和y的话，那么如果是在一条斜线上，那么就意味着`x-y`是相同的，以最下面的那条斜线为例子，0-1=-1，1-2=-1，2-3=-1，所以，这里的xy可以看做是row和col的数值，进行计算来判断他们是否在同一条斜线上。
+
+![1613390571875](./img/1613390571875.png)
+
+沿用上面的概念，这是是x+y，同样用最下面的那条作为例子，1+2=3，2+1=3，3+0=3，这样也可以看做是在同一条斜线上。
+
+回到原题目，首先我想提醒的是，在这道理里用的dfs(深度优先搜索)中，drawChessboard这个方法存储的是col的索引，但是请记住，每次添加一个colIndex进cols这个list则意味着是换了row才进行的，因为根据下图所示，每当找到合适放入皇后的位置后，就会去查找更深一度，对于棋盘而言，就是rowIndex的增加。这一行的哪个位置，被存储的进cols的序号代表的是，这个位置是可以放入皇后的，替换为Q。
+
+![1613391870912](./img/1613391870912.png)
+
+查找规则类似上图，当找到符合规则的序号的时候，会进入更深层次的递归，再次从0序号开始去找新的答案，如果这一行都没找到，那么就会跳出那一层递归，接着等待他的是remove方法，将这个序号删除，进入下一次序号的递归，如果找到符合，那么再次进入更深层次的递归调用，直到达成cols.size()==n这一条件，最后drawChessboard绘画出棋盘添加进list。
+
+### 字符串
+
+##### 字符串的反转
+
+```
+input：the sky is blue
+Output: blue is sky the
+
+input: "  hello world!"
+Output:" world! hello"
+```
+
+```java
+public String reverseWords(String s){
+    if(s==null||s.trim().length()==0){
+        return "";
+    }
+    String[] words = s.trim().split(" ");
+	StringBuilder result  = new StringBuilder();
+    //反转，从后往前遍历
+    int len = words.length();
+    for(int i = len-1;i>0;i--){
+        //去除多余的空格
+        if(words[i]==" "){
+            continue;
+        }
+        result.add(words[i].trim()+" ");
+    }
+    return result.toString().trim();
+}
+```
+
+##### 第二种反转
+
+```
+input: "Let's take LeetCode contest"
+output:"s'tel ekat edoCteeL tsetnoc "
+```
+
+```java
+public String reverseWords(String s){
+    if(s==null||s.trim().length()==0){
+        return "";
+    }
+    StringBuilder answer = new StringBuilder();
+    String[] words = s.trim().split(" ");
+    for(int i=0;i<words.length();i++){
+        if("".equals(words[i])){
+            continue;
+        }
+        answer.append(" ").append(reverseWord(words[i]));
+    }
+    return answer.toString().trim();
+}
+
+private String reverseWord(String s){
+    int len = s.length();
+    StringBuilder sb = new StringBuilder();
+    //从后往前
+    for(int i =len-1;i>=0;i--){
+        sb.append(s.charAt(i));
+    }
+    return sb;
+}
+```
+
+##### 数字转罗马
+
+Integer to Roman
+
+`leetCode 12`有兴趣的可以看看。
+
+
+
+### 节有序树
+
+What is Typeahead？
+
+提示词
+
+类似于谷歌或者推特的输入关键字进行提示的功能，如果需要实现这样功能，我们应该如何下手，首先，当我们输入一个关键字的时候，实际上是需要去服务端去请求与这关键字的相关信息的，这毋庸置疑，所以这个到数据库查找可能会变成这这样。
+
+```mysql
+select * from tableName where key_word like '{inputKey}%' order by search_count limit 10
+```
+
+但是如果是这样利用范围查找，查找速度是很慢的，想要查找速度快，我们可以将范围查找转化为精确地查找。
+
+```mysql
+select * from tableName where key_word ='{inputKey}' order by search_count limit 10
+```
+
+但是，虽然like换成了=号，我们就需要响应的映射关系，例如
+
+```json
+a -> [amzon,abs,af,...]
+am -> [amzon,amc,amd,...]
+t -> [trmp,tit,...]
+```
+
+类似这样的感觉，所以有了缓存加数据库的实现方案，首先通过统计某个准确关键字的点击次数，例如输入a，然后提示了后面的一串，但你点击`amzon`的时候，`amzon`被确定为一条有效的搜索记录，被记录，下次提示的时候，会因为搜索次数多而靠前显示。所以我们可以这样设计这个功能。
+
+![1613397758088](./img/1613397758088.png)
+
+
+
+DataCollection Service 负责记录这些关键字被搜索了多少次，已经相关联的prefix_key，前缀关键字的信息
+
+```
+搜索次数的统计
+-------------
+key   word
+amzon  30b
+trimp  20b
+lol	   10b
+-------------
+前缀关键字的组装，也要根据搜索次数来更新需要提示的顺序
+a -> [amzon,abs,af,...]
+am -> [amzon,amc,amd,...]
+t -> [trmp,tit,...]
+例如,abs后来的次数比amzon多了你的提升可能会变成这样
+a -> [abs,amzon,af,...]
+```
+
+而这些关键的搜索提示，会被组装成一个tire，也就是一个树结构，这个树结构每个节点都有前缀，且关联了一个列表，列表彼此成为父子节点，由dataCollection Service 进行更新，最后推送到Query Service，供他使用，提供搜索服务，为了更加方便的更新，我们可以让Query Service 提供两个tire，当一个tire更新好了，就可以切换到这个新的tire中，之前使用的tire等待下一次更新切换，如此往复，提高效率。
+
+![1613398501092](./img/1613398501092.png)
+
