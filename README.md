@@ -3744,3 +3744,139 @@ a -> [abs,amzon,af,...]
 
 ![1613398501092](./img/1613398501092.png)
 
+##### 如何实现 Trie
+
+```
+实现一个trie，支持insert，search，startWith方法
+
+例如：
+Trie trie = new Trie();
+
+trie.insert("apple");
+trie.search("apple"); // return true
+trie.search("app"); // return false
+trie.startWith("app");// return true
+trie.insert("app");
+trie.search("app"); // return true
+
+不考虑特殊字符，也不考虑扩容的问题，只是单纯实现这个功能
+```
+
+首先，按照我们上面的给的提示词的逻辑，我们可以得到一些灵感，用树节点的结构来存储他们，但是这里的问题并不在于查找出对应的提示词和返回相关关键词，所以问题会变得简单。
+
+我们使用Node节点的数据结构来存储他们。
+
+![1613546623997](./img/1613546623997.png)
+
+我们通过insert来将一个完整的单词，拆解成不同的字母放入不同的**TrieNode**中，组装成一种特殊的树结构，这个树结构可能存在**层**的概念，由于有hashmap存在，在第一次查找确定存在这个字母前缀的时候，会得到对应char映射的trieNode，这个时候所映射的trieNode会有对应的childern，也就是hashMap。
+
+因此，一个完整的单词如果insert进来，他的存储的结构是这样的。
+
+![1613547343940](./img/1613547343940.png)
+
+```java
+class TrieNode{
+    char c;
+    HashMap<Character,TrieNode> children = new HashMap<Character,TrieNode>();
+    boolean hasWord;
+    public TrieNode(){
+        
+    }
+    public TrieNode(char c){
+        this.c = c;
+    }
+}
+public class Trie{
+    
+    //一切开始的源头
+    private TrieNode root;
+    
+    public Trie(){
+        root = new TrieNode();
+    }
+    
+    public void insert(String word){
+        //拿到当前的节点
+        TrieNode current = root;
+        //拿到当前节点所添加完成的映射节点
+        Map<Character,TrieNode> childern = current.childern;
+        //拆分单词
+        char[] wordArray = word.toCharArray();
+        for(int i = 0,len=wordArray.length;i<len;i++){
+            //查看当前层是否存在对应的字母
+            char c = wordArray[i];
+            if(childern.containsKey(c)){
+                //替换节点，接着向下找
+                current = childern.get(c);
+            }else{
+                //不存在则需要更新
+                TrieNode newNode = new TrieNode(c);
+                childern.put(c,newNode);
+                //替换当前对象
+                current = newNode;
+            }
+            // 无论找到还是没找到，接着替换，寻找下一个
+            childern = current.childern;
+            //当找到最后一个，将hasWord设置为true，表示确实有这个单词
+            if(i==len-1){
+                current.hasWord = true;
+            }
+        }
+        
+        
+    }
+    
+    public boolean search(String word){
+        TrieNode current = null;
+        Map<Character,TrieNode> childern = root.childern;
+        char[] wordArray = word.toCharArray();
+        for(int i =0,len=wordArray.length;i<len;i++){
+            char c = wordArray[i];
+            if(childern.containsKey(c)){
+                current = childern.get(c);
+                childern = current.childern;
+                //切换当前节点，和当前节点所映射好的下一次的字母库
+            }else{
+                //只要没找到就返回false
+                return false;
+            }
+        }
+        //最后将是否有这个单词返回回去
+        return current.hasWord;
+    }
+    //关于是否有前缀的概念
+    public boolean startsWith(String prefix){
+        TrieNode current = null;
+        Map<Character,TrieNode> childern = root.childern;
+        char[] wordArray = word.toCharArray();
+        for(int i =0,len=wordArray.length;i<len;i++){
+            char c = wordArray[i];
+            if(childern.containsKey(c)){
+                current = childern.get(c);
+                childern = current.childern;
+                //切换当前节点，和当前节点所映射好的下一次的字母库
+            }else{
+                //只要没找到就返回false
+                return false;
+            }
+        }
+        return true;
+    }
+    
+}
+
+```
+
+关于后面的自己的搜索引擎的扩展，在原有的TrieNode进行改造，TrieNode可以塞入更多的内容来保证可以索引到相关的提示词信息。
+
+```java
+class TrieNode{
+    char c;
+    HashMap<Character,TrieNode> childern;
+    boolean hasWord = false;
+    //下面的扩展
+    String[] hitWordList = []//...? 与之关联的提示词，。之后也需要需要考虑根据
+        // DataCollection 的内容进行更新他们的前后顺序
+}
+```
+
