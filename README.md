@@ -3880,3 +3880,81 @@ class TrieNode{
 }
 ```
 
+#### 什么是并查集
+
+what is Union Find?
+
+一种用于解决，集合，查询，合并的数据结构。
+
+![1613568275456](./img/1613568275456.png)
+
+例如有上图两个公司，公司A有领导B和两个下属A与C，公司B有领导E，和两个下属F与G，那么我们可以说A与C的父级是B，并且ABC是属于同一家公司。很明显，公司B和公司A并没有关联关系，ABC与EFG是单独地两个公司。这个时候这两个公司有个不成文的规定，那就是同一家公司得人不能谈恋爱，那么请问，A与F能不能谈恋爱。答案很明显，是肯定的，因为他们最高领导不同，且不再同一家公司。这个时候公司A收购了公司B。
+
+![1613568541722](./img/1613568541722.png)
+
+现在E的领导变成了B，也就是说大体上来说，他们变成了同一家公司了，且大家最大的领导是一致的，拥有了相同的组件。那么这个时候A和F就是不能谈恋爱了。
+
+那么我们设计一个这个的数据结构来阐述他们的过程，该数据结构拥有`find`方法和`union`合并方法。和可以通过寻找某个员工是否拥有相同父类。
+
+那么关于如何查找，有递归和非递归的方法来查找，但是这里有一个问题，这里只有两家公司还好，如果有更多的公司得话，一旦树节点的深度高了后，可能会爆栈，所以还是使用非递归的方法比较好，所谓地非递归就是使用迭代的方法进行查找。
+
+```java
+class UnionFind {
+    /**
+    这个map将每个节点作为key对应的value是他们的最终父级
+    */
+    Map<Integer,Integer> father = new HashMap<Integer,Integer>();
+    
+    public UnionFind(int n){
+        //初始化，每个节点都是自己得father
+        for(int i =0;i<n;i++){
+            father.put(i,i);
+        }
+    }
+    
+    int find(int i){
+        //获得现在已知道的该元素的父类映射关系
+        int parent = father.get(i);
+        while(parent!=father.get(parent)){
+            //只要父类不是自己，也就是说A得父类是B，但是B的父类只可能是B
+            // 能进入这循环表示还没找到真正的父类，所以我们要不断的替换
+            if(father.containsKey(parent)){
+            	parent = father.get(parent);    
+            }else{
+                break;
+            }
+        }
+        // 经过上述的查找，我们已经找到的对应 i 现在最大的父类是多少，现在我们要更新这个值
+        //到对应的父类，这样下次查找会获得O(1)的时间复杂度
+        int temp = -1;//随便定义的值
+       	int fa = father.get(i);
+        while(fa!=father.get(fa)){
+            temp = father.get(fa);
+            //全部更新成上面找到的最大的祖先
+            father.put(fa,parent);
+            //下一次循环替换
+            fa = temp;
+        }
+        return parent;
+    }
+    
+    // 合并
+    // i与j进行合并，即i变成j的从属，与之，i的所有的从属的所有的祖先从i变成为j
+    void union(int i,int j){
+        int fa_i = find(i);
+        int fa_j = find(j);
+        if(fa_j!=fa_x){
+            //并不是同一祖先
+            father.put(fa_i,fa_j);
+        }
+        // 以上，完成了更新，就是如此简单，等待下次查询 find的时候，子类的关系会在
+        // find的更新
+    }
+}
+```
+
+##### 小岛问题II
+
+Number Of Island II
+
+在之前的BFS的时候，讨论后小岛问题，利用queue去对已知得小岛进行扩散查找，最后找到目标。
