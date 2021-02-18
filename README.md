@@ -3957,4 +3957,156 @@ class UnionFind {
 
 Number Of Island II
 
-在之前的BFS的时候，讨论后小岛问题，利用queue去对已知得小岛进行扩散查找，最后找到目标。
+在之前的BFS的时候，讨论后小岛问题，利用queue去对已知得小岛进行扩散查找，最后找到目标。这次的小岛问题，在于在一块海域里面逐渐添加小岛，然后计算添加后的小岛数量，需要注意的是，小岛在多次添加后可能存在连在一起，这样就可以看做是同一个小岛。
+
+![1613655045186](./img/1613655045186.png)
+
+例如上图是一个5*4的矩阵，目前是一个全是海洋的地方，现在我们随机添加一个海岛进入。
+
+![1613655167549](./img/1613655167549.png)
+
+那么现在海岛数目量是1
+
+![1613655201050](./img/1613655201050.png)
+
+接着又随机添加了一个岛屿，这个时候岛屿的数量为2，现在我们再添加一个。
+
+![1613655351914](./img/1613655351914.png)
+
+神奇的是，现在岛屿已经不是2而，而是连成了一片，变成了一个岛屿。所以我们需要查看所添加的岛屿是否会和之前已经添加得岛屿**组成一个岛屿**。
+
+关于解题思路，我们需要使用之前说得并存集的概念，其实我们可以这样思考问题，一块已知长宽的矩阵中，落入某个点，其实我们只需要去**嗅探**这个点周围有没有**同为岛屿却还没有合并为同一个小岛的岛屿**，其实很像是并查集中的合并方法，将本来不同父级的元素变成同属一个父节点。
+
+``` java
+class Point{
+    int x;
+    int y;
+    public Point(){
+        this.x=0;
+        this.y=0;
+    }
+    public Point(int x,int y){
+        this.x=x;
+        this.y=y;
+    }
+}
+
+//并查集的定义,我们知道并查集需要两个方法，一个find(查找)，一个union(合并)
+class UnionFind{
+    private Map<Integer,Integer> father = new HashMap<Integer,Integer>();
+    /*
+    传入行列，构建一个特殊的集合关系，这个集合包含了
+    海域中所有点的归属关系
+    */
+    public UnionFind(int row,int colum){
+        for(int i=0;i<row;i++){
+            for(int j=0;j<colum;j++){
+                int id = convertedId(i,j,column);
+                //这样每个矩阵中就有唯一的表示id来代表。
+                father.put(id,id);
+            }
+        }
+    }
+    
+    /*
+     请注意，这里的查找方法返回的是最后的父级
+     在此期间，还未被确定为最终父级得其它元素，最终会指向一致的父级
+    */
+    public int find(int x){
+        //不断的寻找 x 得最终父级
+        int fa = father.get(x);
+        while(fa!=father.get(fa)){
+            //最终父级的父级是他自己
+            fa = father.get(fa);
+        }
+        //最后将会找到最终的父级
+        int temp = -1;
+        int f = father.get(x);
+        while(f!=father.get(f)){
+            temp = father.get(f);
+            father.put(f,fa);
+            f = temp;
+            //一次性更新
+        }
+        return father;
+    }
+    
+    public void union(int x,int y){
+        int father_x = find(x);
+        int father_y = find(y);
+        if(father_x!=father_y){
+            map.put(father.x,father.y);
+        }
+    }
+    
+    /*
+    这个方法本质上没有什么特殊的含义，之所以会有这个方法
+    是为了将每个点都标记上一个唯一的转换符号，也就是所谓的id，用来识别
+    在这个并查集得位置
+    */
+    public int convertedId(int n,int m,int col){
+        return n*col+m;
+    }
+}
+
+/*
+输入代表长宽高得数值，还有会落下的点，返回分别加这些点的岛个数
+*/
+public List<Integer> numsIsLands(int n,int m,Point[] operators){
+    List<Integer> result = new ArrayList<Integer>();
+    if(operators==null||operators.length==0){
+        return result;
+    }
+    //初始化关键的数据结构，并查集
+    UnionFind unionFind = new UnionFind(n,m);
+    //初始化相关的表示已经放过地岛屿
+    boolean[][] isLand = new boolean[][];
+    int[] dx = {0,0,1,-1};
+    int[] dy = {1,-1,0,0};
+    int count = 0;
+    //计算落下的这点的变化
+    for(Point point:operators){
+        int x = point.x;
+        int y = point.y;
+        //如果这个已经是岛屿了，那么我们就忽略它
+        if(!isLand[x][y]){
+            // 是海洋的话，就使用他
+            //首先将他变成岛屿
+            isLand[x][y] = true;
+            //岛屿的数量增加
+            count++;
+            //然后我们需要判断，现在所加的点是不是可以和之前的点连成一片
+            // 首先获得唯一标识
+            int id = unionFind.convertedId(x,y,m);
+            //接着我们上下左右的去寻找，是否存在是岛屿且还没有被合并的地方
+            for(int i=0;i<4;i++){
+                int current_x = x+dx[i];
+                int current_y = y+dy[i];
+                //判断是否合法
+                if(current_x>=0&&current_x<m
+                  &&current_y>=0&&current_y<n
+                   &&isLand[current_x][current_y]){
+                    //不能超过矩阵地范围，且这个点是一个小岛
+                    //符合以上条件后，我们需要将进行并查集操作
+                    int current_id = unionFind.
+                        convertedId(current_x,current_y,m);
+                    
+                    int father_id = unionFind.find(id);
+                    int current_father_id = unionFind.find(current_id);
+                    //两个父类是否相同
+                    //不相同的情况说明还没有合并
+                    if(father_id!=current_father){
+                        // 那么这一步，上面的count++就不能算数，因为已经周围可以连成一片小岛了
+                    	count--;
+                        unionFind.union(father_id,current_father_id);
+                    }
+                }
+            }
+        }
+        //添加
+        result.add(count);
+    }
+    return result;
+}
+```
+
