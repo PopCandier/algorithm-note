@@ -4320,3 +4320,122 @@ public int uniquePathWithObstacles(int[][] obstacleGrid){
 // 套路都一样。
 ```
 
+##### 最长子串
+
+Longest Common Subsequence
+
+```
+给定一个字符串
+abcdef
+给第二个子串
+ace
+判断ace在abcdef中有相同的子串
+所以这个输出为3，代表这三个字母在上面的子串都存在，三个字母都含有，重复
+
+abc   dfr
+输出为0，说明abc并没有在子串 dfr中有找到相同的子串。
+```
+
+``` java
+public int loggestCommonSubsequence(String A,String B){
+    if(A==null||A.length()==0||B==null||B.length()==0){
+        return 0;
+    }
+    int alength = A.length();
+    int blength = B.length();
+    //动态规划的体现，能够记录变化的变化值
+    //长宽都增加1也是为了特殊的初始化值
+    int[][] loggest = new int[alength+1][blength+1];
+    for(int i=1;i<=alength;i++){
+        for(int j=1;j<=blength;j++){
+            //判断目标地长度
+            if(A.charAt(i-1)==B.charAt(j-1)){
+                loggest[i][j] = loggest[i-1][j-1]+1;
+            }else{
+                loggest[i][j] = loggest[i-1][j]+loggest[i][j-1];
+            }
+        }
+    }
+    return loggest[alength][blength];
+}
+```
+
+构建一个二维数组，分别为等待匹配的字符串，和源字符串。
+
+![1614083375327](./img/1614083375327.png)
+
+由于我们在创建二维数组的时候，alength和blength都增加了1，而且在循环开始的时候也从1开始，所以第一列和第一行都将会是int得初始值，也就是0。
+
+所以第一次的逻辑，是在绿色圆圈开始计算。
+
+所以abcd和acd都是第一个位置，a与a相等，所以，所以这个地方是左上角的值加1得到这个位置的结果。所以是1.
+
+![1614083649722](./img/1614083649722.png)
+
+接着循环逻辑，下一个的值，将会是上方的值和左边的值相加。
+
+![1614083717737](./img/1614083717737.png)
+
+接着等待下一次值相同，也就是c的位置，图会变成这样。
+
+![1614083779105](./img/1614083779105.png)
+
+这样我们就得到结果。输出为3
+
+##### 单词拆分
+
+word break
+
+```
+给定一串字符串，再给一个含有若干个单词的字典。
+如果内容可以。
+s = "leetcode" wordDict = ["leet","code"];
+返回 true，因为leetcode可以拆分成 leet code
+s = "applepenapple" wordDict = ["apple","pen"];
+返回 true，他是允许重复的拆分
+```
+
+首先这种判断是否存在用Set来做是再合适不过了。再者就是拆分单词的用法，和动态规划地体现，我们使用一个boolean数组来根据需要拆分的字符串构建一维数组来代表哪个位置可以拆分，以leetcode，如果leet已经可以单独拆分出来的话，那么也意味着leetcode这个串，leet部分已经可以不用再考虑了，只需要考虑后续的code部分，所以我们对每个部分进行是否可以拆分的标记。
+
+```java
+public boolean wordBreak(String s,List<String> wordsDict){
+    Set<String> dict = new HashSet<String>();
+    for(String word:wordsDict){
+        dict.add(word);
+    }
+    boolean[] canSegment = new boolean[s.length()+1];
+    //初始化值
+    canSegment[0] = true;
+    // 开头的位置 设置成可以分割，用来启动循环
+    int largetLengthWord = getLarget(dic);
+    for(int i =1;i<s.length();i++){
+        for(int j=0;j<=largetLengthWord&&j<=i;j++){
+            if(!canSegment[i-j]){
+                continue;
+            }
+            if(dict.contains(s.substring(i-j,i))){
+                canSegment[i] = true;
+            }
+        }
+    }
+    return canSegment[s.length()];
+}
+/*
+获得在这些字典里得单词最大的单词长度
+*/
+private int getLarget(Set<String> dic){
+    int max = 0;
+    for(String word:dic){
+        max =Max.max(max,word.length());
+    }
+    return max;
+}
+
+/*
+
+     			l e e t c o d e
+canSengment   1 0 0 0 1 0 0 0 1
+index         0 1 2 3 4 5 6 7 8 
+**/
+```
+
